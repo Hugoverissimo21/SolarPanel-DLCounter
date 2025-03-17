@@ -24,6 +24,8 @@ class SupervisedDataset(Dataset):
         self.nr_pan = []
         self.id = []
         self.hows_polygon = []
+        self.img_origin = []
+        self.placement = []
 
         for idx in self.data.index:
             self.images.append(os.path.join(self.root_path, self.data['ID'].iloc[idx] + '.jpg'))
@@ -33,6 +35,8 @@ class SupervisedDataset(Dataset):
             self.nr_pan.append(self.data['pan_nbr'].iloc[idx])
             self.id.append(self.data['ID'].iloc[idx])
             self.hows_polygon.append(self.data['hows_polygon'].iloc[idx])
+            self.img_origin.append(self.data['img_origin'].iloc[idx])
+            self.placement.append(self.data['placement'].iloc[idx])
 
     def __len__(self):
         return len(self.images)
@@ -48,6 +52,8 @@ class SupervisedDataset(Dataset):
 
         mask = np.zeros((img.shape[1],img.shape[2]),dtype = np.int32)
         all_polygons = []
+        polygons_boiler = []
+        polygons_pan = []
         for polygon in vertices_boil:
             lst2 = []
             lst1 = []
@@ -63,8 +69,9 @@ class SupervisedDataset(Dataset):
                     v1[1] -= 83
                 lst2.append((v1[0],v1[1]))
             lst1.append(lst2)
-            lst1.append(5) #boiler
+            lst1.append(1) #boiler
             all_polygons.append(lst1)
+            polygons_boiler.append(lst2)
         for polygon in vertex_pan:
             lst2 = []
             lst1 = []
@@ -80,7 +87,8 @@ class SupervisedDataset(Dataset):
                     v1[1] -= 83
                 lst2.append((v1[0],v1[1]))
             lst1.append(lst2)
-            lst1.append(6) #pan
+            lst1.append(2) #pan
             all_polygons.append(lst1)
+            polygons_pan.append(lst2)
         mask = polygons_to_segmentation_mask(all_polygons, mask)
-        return img, mask.astype(int)
+        return img, mask.astype(int), polygons_pan, polygons_boiler, self.nr_boild[idx], self.nr_pan[idx], self.id[idx], self.img_origin[idx], self.placement[idx]
