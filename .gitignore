@@ -161,3 +161,4 @@ cython_debug/
 
 images/
 annotated_train/
+.DS_Store
