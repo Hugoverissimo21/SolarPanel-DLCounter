@@ -162,3 +162,5 @@ cython_debug/
 images/
 annotated_train/
 .DS_Store
+ModelBuild/model02_v01/1742327440.keras
+/ModelBuild
