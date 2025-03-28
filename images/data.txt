@@ -1,0 +1,9 @@
+Available at
+
+https://zindi.africa/competitions/lacuna-solar-survey-challenge/data
+(official source)
+
+and
+
+https://www.kaggle.com/datasets/jimmybarium/lacuna-solar-survey-zindi
+(unofficial source)

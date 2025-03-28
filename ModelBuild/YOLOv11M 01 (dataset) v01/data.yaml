@@ -1,0 +1,8 @@
+train: /Users/hugover/Desktop/CAA01/ModelBuild/model08/train/images  # Path to training images
+val: /Users/hugover/Desktop/CAA01/ModelBuild/model08/val/images      # Path to validation images
+
+segmentation: true
+
+names:
+  0: boil
+  1: pan
