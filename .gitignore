@@ -164,3 +164,4 @@ ModelBuild/YOLOv11M 03 (datasetJ solo)/weights/best.pt
 ModelBuild/YOLOv11M 03 (datasetJ solo)/weights/last.pt
 ModelBuild/YOLOv11M 02 (soloPanBoil)/weights/last.pt
 ModelBuild/YOLOv11M 02 (soloPanBoil)/weights/best.pt
+.DS_Store
