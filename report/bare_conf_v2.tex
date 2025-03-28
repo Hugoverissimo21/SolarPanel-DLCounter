@@ -1,0 +1,238 @@
+
+\documentclass[conference]{IEEEtran}
+
+\usepackage{float} 
+\usepackage{url}  
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{cite}
+\pagestyle{plain}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+\usepackage{placeins}
+
+
+\ifCLASSINFOpdf
+  \usepackage[pdftex]{graphicx}
+\fi
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\begin{document}
+
+
+\title{TITULOOOOO}
+
+\author{\IEEEauthorblockN{\\ Hugo Veríssimo}
+\IEEEauthorblockA{NOME DE CADEIRA ATUALIZAR24/25\\
+University of Aveiro\\
+Aveiro, Portugal\\
+hugoverissimo@ua.pt}
+\and
+\IEEEauthorblockN{\\ João Cardoso}
+\IEEEauthorblockA{Foundations of Machine Learning 24/25\\
+University of Aveiro\\
+Aveiro, Portugal\\
+joaopcardoso@ua.pt}}
+
+\maketitle
+\thispagestyle{plain}
+
+\begin{abstract}
+abstact
+\end{abstract}
+
+\begin{quote}
+\small
+\noindent
+\textbf{Keywords:} MovieLens, GroupLens, quais meter
+\end{quote}
+
+\IEEEpeerreviewmaketitle
+
+
+\section{Introduction}
+
+lala intro
+
+\section{Methodology}
+
+\subsection{Data description}
+
+% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
+% GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR!
+
+% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25675
+
+data
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_boil_distribution.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_boil_distribution}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_distribution.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_distribution}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_origin_classes.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_origin_classes}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_panel_distribution.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_panel_distribution}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_placement_classes.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_placement_classes}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_poly_problems.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_poly_problems}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_segmentation_mask.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_segmentation_mask}
+\end{figure}
+
+\subsection{data: coisas pre processamento}
+
+01 data v07:
+
+- descricao dos dados, qnt e afins
+
+- tratamento dos poliggos (str para lsita, tratar poligonos com letras no meio, juntar poligodos de imagens c o mesmo id, na mesma linha, pq antes era um poligono por linha)
+
+- revisao manual de todas as imagens e correcao de poligonos mal desenhados ou localizados nas imagens
+
+- cricao de classe python para correcao dos poligonos e facilitar leitura
+
+02 data v01:
+
+- 263 imagens para o lixo
+
+- separacao em 80/20 do dataset em treino e validacao, visto q o teste é dado pelo concurso, online
+
+e acho q é só
+
+
+\subsection{Data splitting \& models implemented}
+
+....
+
+\subsection{Exploratory data analysis}
+
+
+aaa
+
+
+\section{djaisjd Models}
+
+llalal
+
+\subsection{03 model01 v04 - hugo}
+
+- ler ficheiro train e test pickle
+
+- fez se data augmentation e resize das imagens para 240x240
+
+- input foi so a imagem e output foi so nr boil, nr pan
+
+- modelo EfficientNetV2B0, imagenet, sem mudar os pesos originais
+
+- adicionei global avg pool, dense, dropout e dps output
+
+- usei random search para encontrar units do dense e learning rate, se calhar devia ter usado para o dropout tbm, too late
+
+- usei early stopping, patiente 3, restore best wiehgts
+
+-loss Huber delta 1, compiler adamW, métrica para melhor: mae
+
+- dps de escolher o melhor, tem uns graficos no notebook das metricas
+
+- o modelo n aprendeu bem as features q devia, underfitting
+
+- \textbf{public score:} 3.040397919
+
+\subsection{outros modelos - H}
+
+- 05: m03: ef net com features + imagem
+
+- 06: m04: ef net com features + imagem + weights no output (pan vs boild)
+
+- 08: m06: random forest (img + feat)
+
+- 09: m07: XGBRegressor (img + feat) = public score: 2.948509485
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/nn.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:nn}
+\end{figure}
+
+\subsection{faa02 ig}
+
+
+
+\begin{table}[H]
+\centering
+\caption{Error metrics for the train and test set (CF-LR), along with the number of samples for each.}
+\label{tab:model01_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Dataset} & \textbf{RMSE} & \textbf{MAE} & \textbf{Support} \\
+\midrule
+Train Set & 0.58842 & 0.44604 & 80668 \\
+Test Set & 1.24037 & 0.90651 & 20168 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion} 
+
+\subsection{Performance Metrics}
+
+discussao
+
+
+\section{Conclusion}
+
+conc
+
+
+\section*{Work Load}
+
+Both authors contributed equally to the project.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
+
+
+

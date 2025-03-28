@@ -1,5 +1,8 @@
 # Lacuna-solar
- #1 Project FAA 2.0
+
+## CAA01
+
+challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
 ## data
 
@@ -15,3 +18,7 @@
 - Model_Val.pkl
 
 e usar SupvDset.py como modulo com a classe para carregar os dados
+
+
+
+ModelArchive tem TODOS os modelos, mas ha copias dos modelos na pagina principal, apenas para terem um maior destaque
