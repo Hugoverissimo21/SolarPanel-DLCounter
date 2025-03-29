@@ -118,6 +118,13 @@ data
     \label{fig:data_segmentation_mask}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_augmentation.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_augmentation}
+\end{figure}
+
 \subsection{data: coisas pre processamento}
 
 01 data v07:
@@ -187,6 +194,8 @@ llalal
 
 - 09: m07: XGBRegressor (img + feat) = public score: 2.948509485
 
+\subsection{zulo40 models type}
+
 
 \begin{figure}[H]
     \centering
@@ -194,6 +203,21 @@ llalal
     \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
     \label{fig:nn}
 \end{figure}
+
+faz data augmentations
+
+o cv q ele usa consiste em
+
+- 3 folds
+
+- para cada fold, um treino e um validacao (80/20), ajustanto um modelo em cada fold.
+
+- no fim, junta os modelos (3, pq sao 3 folds) e faz a media das previsoes
+
+- ou seja, usa 3 modelos como um só
+
+ele usa Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
+
 
 \subsection{faa02 ig}
 
