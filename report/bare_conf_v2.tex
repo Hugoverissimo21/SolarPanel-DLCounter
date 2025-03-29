@@ -184,15 +184,6 @@ llalal
 
 - \textbf{public score:} 3.040397919
 
-\subsection{outros modelos - H}
-
-- 05: m03: ef net com features + imagem
-
-- 06: m04: ef net com features + imagem + weights no output (pan vs boild)
-
-- 08: m06: random forest (img + feat)
-
-- 09: m07: XGBRegressor (img + feat) = public score: 2.948509485
 
 \subsection{zulo40 models type}
 
@@ -218,8 +209,23 @@ o cv q ele usa consiste em
 
 ele usa Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
 
+\subsection{yolo}
 
-\subsection{faa02 ig}
+ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem
+
+problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
+
+surgiu a ideia de criar 4 classeS: boiler, panel, conjunto de boileres, conjunto de panels, so q devido ao class imbalance o modelo teve resultados nao satisfatorios o suficente
+
+METER GRAFICO IMABALANCE
+
+entao decidiu-se rever o dataset e separar manualmente os poligonos em paineis e boileres indivudais, deixando de existir grupos de paineis
+
+o yolo apresentou assim mt melhores resultados, apesar da reducao da dimensao do dataset em termos de imagens mas aumento de amostras do que realmente sao paineis e boilers individuais
+
+
+
+\section{faa02 ig}
 
 
 
