@@ -24,16 +24,16 @@
 \begin{document}
 
 
-\title{TITULOOOOO}
+\title{Lacuna Solar Survey Challenge: Counting Photovoltaic and Solar Panels from Aerial Imagery}
 
 \author{\IEEEauthorblockN{\\ Hugo Veríssimo}
-\IEEEauthorblockA{NOME DE CADEIRA ATUALIZAR24/25\\
+\IEEEauthorblockA{Complements of Machine Learning 24/25\\
 University of Aveiro\\
 Aveiro, Portugal\\
 hugoverissimo@ua.pt}
 \and
 \IEEEauthorblockN{\\ João Cardoso}
-\IEEEauthorblockA{Foundations of Machine Learning 24/25\\
+\IEEEauthorblockA{Complements of Machine Learning 24/25\\
 University of Aveiro\\
 Aveiro, Portugal\\
 joaopcardoso@ua.pt}}
@@ -48,7 +48,7 @@ abstact
 \begin{quote}
 \small
 \noindent
-\textbf{Keywords:} MovieLens, GroupLens, quais meter
+\textbf{Keywords:} EfficientNet, Object Detection
 \end{quote}
 
 \IEEEpeerreviewmaketitle
@@ -56,32 +56,23 @@ abstact
 
 \section{Introduction}
 
-lala intro
+Access to electricity and warm water is a basic necessity nowadays, and in developing countries the lack of a centralized distribution system makes access harder for everyone. Then it is essential for governments, non-governmental organizations and energy suppliers to understand how solar and photovoltaic panels are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar and photovoltaic panels in drone and satellite imagery.
 
-\section{Methodology}
+In the present work, we have developed different approaches to the problem: taking a regression type approach, where images are analysed with EfficientNet type models and the target number of panels are provided; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels.
 
-\subsection{Data description}
+EXPLICAR E FICAR BEM EXPLICITO: DUAS REGRESSOES: pan E boil
 
-% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
-% GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR!
+\section{state of the art?}
 
-% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25675
+asdasdas
 
-data
+\section{Methodology}.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/data_boil_distribution.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_boil_distribution}
-\end{figure}
+\subsection{Data description (com EDA)}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/data_distribution.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_distribution}
-\end{figure}
+o dados, fornecidos pela propria competicao (citar), consistem em 4419 imagens, complementadas por metadata referente à origin da imagem e ao placement dos paineis, providing context on installation environments.
+
+da totalidade destas imagens, 3312 (75\%) contêm indicacoes das delimitacoes de conjutnos de paineis e de boilers, atraves de poligonos, assim como a quantidade que se encontra dentro de cada qual. as restantes 1107 (25\%) nao têm esta informacao. Assim, por opcao da competicao, temos uma distribuicao de treino e teste de 75/25
 
 \begin{figure}[H]
     \centering
@@ -92,17 +83,72 @@ data
 
 \begin{figure}[H]
     \centering
+    \includegraphics[width=1\linewidth]{assets/data_placement_classes.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_placement_classes}
+\end{figure}
+
+nas figuras \ref{fig:data_origin_classes} e \ref{fig:data_placement_classes} podem-se observar as classes de origin e de placement relativas as imagens. as origins da imagem podem ser drone image (D) or satellite image (S), while the placement classes (Installations) sao distribuidas por on rooftops or terraces (roof), satellite images where the specific placement could not be determined (S-unknown), in open courtyards or gardens (openspace), that span both rooftops and outdoor spaces (r\_openspace).
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_distribution.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_distribution}
+\end{figure}
+
+ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
+
+tendo em conta os poligonos referentes aos panels e boilers, também foi analisada a distribuicao da quantidade de paineis e de boilers naos poligonos que delimitam os conjuntos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/data_boil_distribution.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:data_boil_distribution}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
     \includegraphics[width=1\linewidth]{assets/data_panel_distribution.png}
     \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
     \label{fig:data_panel_distribution}
 \end{figure}
 
+as figuras \ref{fig:data_boil_distribution} e \ref{fig:data_panel_distribution} revelam esta distribuicao, revelando que .... (fiquei sem inspiracao)
+
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/data_placement_classes.png}
+    \includegraphics[width=1\linewidth]{assets/data_segmentation_mask.png}
     \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_placement_classes}
+    \label{fig:data_segmentation_mask}
 \end{figure}
+
+por fim, na imagem \ref{fig:data_segmentation_mask} pode-se verificar uma das imagens de treino e os respetivos poligonos referentes aos paineis e boilers convertidos numa mascara de segmentacao, onde se verifica a presença de 4 grupos de solar panels, sendo cada um destes um grupo unitário, e 1 grupo de boilers, tambem unitario.
+
+
+\subsection{data: pre processamento e ques}
+
+... n cheguei a escrever
+
+- tratamento dos poliggos (str para lsita, tratar poligonos com letras no meio, juntar poligodos de imagens c o mesmo id, na mesma linha, pq antes era um poligono por linha)
+
+- revisao manual de todas as imagens e correcao de poligonos mal desenhados ou localizados nas imagens
+% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
+% GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR!
+
+- cricao de classe python para correcao dos poligonos e facilitar leitura
+
+- 263 imagens para o lixo
+
+- separacao em 80/20 do dataset de treino em treino e validacao, visto q o teste é dado pelo concurso, online
+
+
+
+
+data
 
 \begin{figure}[H]
     \centering
@@ -113,44 +159,17 @@ data
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/data_segmentation_mask.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_segmentation_mask}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
     \includegraphics[width=1\linewidth]{assets/data_augmentation.png}
     \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
     \label{fig:data_augmentation}
 \end{figure}
 
-\subsection{data: coisas pre processamento}
 
-01 data v07:
-
-- descricao dos dados, qnt e afins
-
-- tratamento dos poliggos (str para lsita, tratar poligonos com letras no meio, juntar poligodos de imagens c o mesmo id, na mesma linha, pq antes era um poligono por linha)
-
-- revisao manual de todas as imagens e correcao de poligonos mal desenhados ou localizados nas imagens
-
-- cricao de classe python para correcao dos poligonos e facilitar leitura
-
-02 data v01:
-
-- 263 imagens para o lixo
-
-- separacao em 80/20 do dataset em treino e validacao, visto q o teste é dado pelo concurso, online
-
-e acho q é só
-
-
-\subsection{Data splitting \& models implemented}
+\subsection{Models implemented}
 
 ....
 
-\subsection{Exploratory data analysis}
+
 
 
 aaa
@@ -187,6 +206,7 @@ llalal
 
 \subsection{zulo40 models type}
 
+% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25675
 
 \begin{figure}[H]
     \centering
