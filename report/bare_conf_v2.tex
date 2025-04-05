@@ -56,14 +56,19 @@ abstact
 
 \section{Introduction}
 
-Access to electricity and warm water is a basic necessity nowadays, and in developing countries the lack of a centralized distribution system makes access harder for everyone. Then it is essential for governments, non-governmental organizations and energy suppliers to understand how solar and photovoltaic panels are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar and photovoltaic panels in drone and satellite imagery.
+Access to electricity and warm water is a basic necessity nowadays. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created by the Lacuna Fund and associate entities in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar thermal (solar from here on) and photovoltaic panels in drone and satellite imagery.
 
-In the present work, we have developed different approaches to the problem: taking a regression type approach, where images are analysed with EfficientNet type models and the target number of panels are provided; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels.
+In the present work, we have developed different approaches to the problem, where the two types of panels are considered in isolation: taking a regression type approach, where images are analysed as a whole and the target number of panels are provided per image; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels.
 
-EXPLICAR E FICAR BEM EXPLICITO: DUAS REGRESSOES: pan E boil
+%EXPLICAR E FICAR BEM EXPLICITO: DUAS REGRESSOES: pan E boil
 
 \section{state of the art?}
 
+\subsection{EfficientNetV2}
+
+\subsection{Object Detection}
+
+\subsection{Segmentation models}
 asdasdas
 
 \section{Methodology}.
@@ -131,24 +136,9 @@ por fim, na imagem \ref{fig:data_segmentation_mask} pode-se verificar uma das im
 
 \subsection{data: pre processamento e ques}
 
-... n cheguei a escrever
+atraves de algumas discussoes do forum da competicao, uma analise mais aprofundada de algumas imagens aleator e dos dados de treino, foram verficados alguns obstaculos para a aplicacao dos modelos.
 
-- tratamento dos poliggos (str para lsita, tratar poligonos com letras no meio, juntar poligodos de imagens c o mesmo id, na mesma linha, pq antes era um poligono por linha)
-
-- revisao manual de todas as imagens e correcao de poligonos mal desenhados ou localizados nas imagens
-% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
-% GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR!
-
-- cricao de classe python para correcao dos poligonos e facilitar leitura
-
-- 263 imagens para o lixo
-
-- separacao em 80/20 do dataset de treino em treino e validacao, visto q o teste é dado pelo concurso, online
-
-
-
-
-data
+nomeadamente, haviam linhas por poligono ao inves de linhas por imagem, as coordenadas dos poligonos eram strings ao inves de floats e algumas coordenadas tinham letras pelo meio.
 
 \begin{figure}[H]
     \centering
@@ -157,12 +147,37 @@ data
     \label{fig:data_poly_problems}
 \end{figure}
 
+apos estas correções, uma das dificuldades tornou-se a validade dos poligonos. alguns poligonos tinham deslocacoes em relacao a posicao real dos paineis, outros tinham vertices misaligned, como se pode ver na imagem \ref{fig:data_poly_problems} alguns exemplos. apesar de não ser um erro o excessive object inclusion, esta torna-se uma barreira a aplicacao direta de modelos como o yolo, que requerem uma mascara por objeto unitario.
+
+de modo a combtaer a validade dos poligonos, foi efetuada uma revisao manual de cada qual, envelvendo a correcao de alguns poligonos deslocados e a eliminacao de imagens com poligonos misaligned.
+
+% https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
+% GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR ?
+
+com este processo foram perdidaas apenas 263 imagens de treino.
+
+por fim, foi criado um dataset de validacao a partir do de treino, tendo esta divisao sido feita numa proporcao de 80/20
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_augmentation.png}
     \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
     \label{fig:data_augmentation}
 \end{figure}
+
+para alem disso, interessa também referir, que foi realizada data augmentation, nao como um processo de pre processamento, mas de forma online, no treino de todos os modelos, com as trasnformacoes
+HorizontalFlip
+VerticalFlip
+RandomRotate90
+GaussianBlur
+CLAHE
+HueSaturationValue
+Normalize (dizer q fizemos normalizcao dos pixeis)
+a imagem \ref{fig:data_augmentation} mostra um exemplo de data augmentation.
+
+% DIZEMOS QUE USAMOS SMP 512X512 ?
+
+
 
 
 \subsection{Models implemented}
@@ -178,30 +193,6 @@ aaa
 \section{djaisjd Models}
 
 llalal
-
-\subsection{03 model01 v04 - hugo}
-
-- ler ficheiro train e test pickle
-
-- fez se data augmentation e resize das imagens para 240x240
-
-- input foi so a imagem e output foi so nr boil, nr pan
-
-- modelo EfficientNetV2B0, imagenet, sem mudar os pesos originais
-
-- adicionei global avg pool, dense, dropout e dps output
-
-- usei random search para encontrar units do dense e learning rate, se calhar devia ter usado para o dropout tbm, too late
-
-- usei early stopping, patiente 3, restore best wiehgts
-
--loss Huber delta 1, compiler adamW, métrica para melhor: mae
-
-- dps de escolher o melhor, tem uns graficos no notebook das metricas
-
-- o modelo n aprendeu bem as features q devia, underfitting
-
-- \textbf{public score:} 3.040397919
 
 
 \subsection{zulo40 models type}
@@ -228,6 +219,13 @@ o cv q ele usa consiste em
 - ou seja, usa 3 modelos como um só
 
 ele usa Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
+
+WE
+
+- exprimentamos diferentes backbones (desnetn, resnet, efnet)
+
+- apos a verificacao de um melhor desempenho do efnet, decidiu-se fazer um fine tunning de hiperparemtnso como o lr, dropout, ...
+
 
 \subsection{yolo}
 
@@ -269,6 +267,8 @@ Test Set & 1.24037 & 0.90651 & 20168 \\
 \end{table}
 
 \section{Discussion} 
+
+https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25674
 
 \subsection{Performance Metrics}
 
