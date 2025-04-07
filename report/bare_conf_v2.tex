@@ -156,14 +156,7 @@ de modo a combtaer a validade dos poligonos, foi efetuada uma revisao manual de 
 
 com este processo foram perdidaas apenas 263 imagens de treino.
 
-por fim, foi criado um dataset de validacao a partir do de treino, tendo esta divisao sido feita numa proporcao de 80/20
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/data_augmentation.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_augmentation}
-\end{figure}
+%por fim, foi criado um dataset de validacao a partir do de treino, tendo esta divisao sido feita numa proporcao de 80/20
 
 para alem disso, interessa também referir, que foi realizada data augmentation, nao como um processo de pre processamento, mas de forma online, no treino de todos os modelos, com as trasnformacoes
 HorizontalFlip
@@ -173,7 +166,6 @@ GaussianBlur
 CLAHE
 HueSaturationValue
 Normalize (dizer q fizemos normalizcao dos pixeis)
-a imagem \ref{fig:data_augmentation} mostra um exemplo de data augmentation.
 
 % DIZEMOS QUE USAMOS SMP 512X512 ?
 
@@ -195,8 +187,11 @@ aaa
 llalal
 
 
-\subsection{zulo40 models type}
+\subsection{Hybrid Model aka zulo40}
 
+tendo em conta a metadata da imagem e a propria, foi criada uma familia de modelos que nao tinham em conta a mask.
+
+esta familia de modelos teve como base o codigo? desenvolvimento por um dos utilizadores da competicao e posteriormente adaptado e melhorado por nos
 % https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25675
 
 \begin{figure}[H]
@@ -206,26 +201,78 @@ llalal
     \label{fig:nn}
 \end{figure}
 
-faz data augmentations
+a arquitetura? desta familia de modelos pode ser verificada na imagem \ref{fig:nn}, que consite num hybrid model de neural networks, ao usar um bacbone (transfer learning) para extrarir features da imagem (cnn's) e snn? para extrar features da metadata. de seguida, é usado um attention head para juntar todas estas features, da imagem e da metadata, para posteriormente obtermos o resultado da regressao
 
-o cv q ele usa consiste em
+ademais, como backbone foi exprimentado um densenet121, efficientnetv2B3 e resnet101, através da divisao dos dados em treino e validacao e o uso de data augmentation nos dados de treino.
 
-- 3 folds
+ao verificar o melhor desempenho pelo efnet, tanto no treino como validacao como teste, decisiu-se fazer um fine-tunning dos hyperparameters.
 
-- para cada fold, um treino e um validacao (80/20), ajustanto um modelo em cada fold.
+\begin{table}[H]
+\centering
+\caption{zulo40 type model hyp}
+\label{parametroszulp}
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Possible Values} \\
+\midrule
+Batch Size conta? & $\{16, 32, 64\}$ \\
+Optimizer & AdamW \\
+Learning Rate & $[10^{-5}, 10^{-3}]$ \\
+Dropout & $\{0.2, 0.3, 0.4\}$ \\
+Scheduler & CosineAnnealingWarmRestarts \\
+T\_0 & $\{3, 5, 7, 10\}$ \\
+T\_mult & $\{1, 2, 3, 5\}$ \\
+Loss & HuberLoss \\
+$\delta$ & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-- no fim, junta os modelos (3, pq sao 3 folds) e faz a media das previsoes
 
-- ou seja, usa 3 modelos como um só
+na tabela \ref{parametroszulp} pode se verificar o espaco possivel de hyperparametros utilizado, tendo sido a escolha dos melhores baseada numa random search com o uso de cross-validation.
 
-ele usa Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
+contudo esta cross validation não foi muito tipica devido aos elevados tempos de ajuste dos modelos. os dados de treino foram separados em 5 folds (80/20), mas cada conjunto de hyperparametros so foi ajustado 3 vezes, e não as tipicas 5 vezes.
 
-WE
+de modo a escolher o melhor modelo usou-se o validation mae médio como métrica tendo sido o melhor conjunto de hyperparametros dado por ... meta06
 
-- exprimentamos diferentes backbones (desnetn, resnet, efnet)
+para alem disso é tbm importante indicar o uso de: 
 
-- apos a verificacao de um melhor desempenho do efnet, decidiu-se fazer um fine tunning de hiperparemtnso como o lr, dropout, ...
+- juntar os modelos (3, pq sao 3 folds) e faz a media das previsoes
 
+- Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
+
+- o scheduler altera o learning rate e o paraetro de regularizacao
+
+quanto aos resultados deste modelo ...
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model01_lc.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:model01_lc}
+\end{figure}
+
+a learning curve Fig. \ref{fig:model01_lc}.... é de notar q ela revela picos em certar epochs (porximo da 5, 15, 35) devido ao scheduler aumentar o parametro de regularizacao
+
+para alem disso a mesma parou a epoch 66 por early stopping, sendo o criterio de paragem a melhor validation mae (ns se e early stopping pq n tem patience mas sim max de 75 epochs e dps escolher o melhor)
+
+no signs of overffiting
+
+\begin{table}[H]
+\centering
+\caption{Error metrics for the Hybrid Model, for the train and test set, along with the number of samples for each.}
+\label{tab:model01_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Dataset} & \textbf{MAE} & \textbf{Support} \\
+\midrule
+Train Set & 0.5127 & 3312 \\
+Test Set & 0.8434 & 1107 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+quanto as metricas de erro presentes na Table \ref{tab:model01_results}, apesar de so termos o MAE parece n haver sinais de overiffing pelas medidas serem semelhantes
 
 \subsection{yolo}
 
