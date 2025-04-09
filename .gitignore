@@ -162,12 +162,4 @@ cython_debug/
 images/
 annotated_train/
 .DS_Store
-<<<<<<< Updated upstream
 ModelBuild/model02_v01/1742327440.keras
-/ModelBuild
-=======
-.DS_Store
->>>>>>> Stashed changes
-.DS_Store
-.DS_Store
-.DS_Store
