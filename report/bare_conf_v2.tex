@@ -13,7 +13,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 \usepackage{placeins}
-
+\usepackage{comment}
 
 \ifCLASSINFOpdf
   \usepackage[pdftex]{graphicx}
@@ -48,7 +48,7 @@ abstact
 \begin{quote}
 \small
 \noindent
-\textbf{Keywords:} EfficientNet, Object Detection
+\textbf{Keywords:} R, Object Detection
 \end{quote}
 
 \IEEEpeerreviewmaketitle
@@ -56,35 +56,58 @@ abstact
 
 \section{Introduction}
 
-Access to electricity and warm water is a basic necessity nowadays. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created by the Lacuna Fund and associate entities in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar thermal (solar from here on) and photovoltaic panels in drone and satellite imagery.
+Access to electricity and warm water has been a basic necessity for a long time in the developed world. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar photovoltaic and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created by the Lacuna Fund and associate entities in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar thermal (solar from here on) and photovoltaic panels in drone and satellite imagery.
 
-In the present work, we have developed different approaches to the problem, where the two types of panels are considered in isolation: taking a regression type approach, where images are analysed as a whole and the target number of panels are provided per image; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels.
+In the present work, we have developed different approaches to the problem at hand, where we need to count the two types of panels separately: taking a regression type approach, where images are analysed as a whole and the target number of panels are provided per image; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels. The different approaches were developed so that a single model for each type would be able to tackle the task of identifying and counting the different panels.
 
 %EXPLICAR E FICAR BEM EXPLICITO: DUAS REGRESSOES: pan E boil
 
-\section{state of the art?}
+\section{State of The Art}
 
-\subsection{EfficientNetV2}
+The task of detection of solar panels serves many purposes, with the strongest focus of the works here documented being on the detection and localization of solar panels in large areas (countries). This type of assessment allows for proper planning of infrastructure, and to adapt current maintenance through peak output of dense areas with solar panels.
+
+In the work of Malof \textit{et al.} the authors developed an automatic detection model of solar arrays, specific for photovoltaic panels. The model developed had computational efficiency at the forefront, with the purpose of being deployed nation wide in the United States, hence a multi-stage approach consisting of: pixel-wise feature extraction; Random Forest (RF) Classifier; post-processing to improve the pixel-wise classification accuracy for the object detection phase; finalizing with the object detection, via thresholding the finalized confidence map. This algorithm presents superior performance to standalone RF, and was well remarked as an initial assessment methodology for large areas. 
+
+The \textit{DeepSolar} model consists allowed to create a nearly complete contiguous solar panel installation map, and consists of two parts, with different purposes: firstly, via transfer learning the convolutional neural network (CNN) classifier is trained on labeled imagery that merely indicates the presence or absence of panels (though the volume of data is considerable, at almost 400 000 images just for this task). The model is then enhanced by adding an additional CNN branch directly connected to the intermediate layers to add segmentation capabilities to the model. The difference is that this approach allows the model to be trained on the same dataset, to "greedily" extract the relevant features associated with solar panels, learning in a semi-supervised manner. The model was able to achieved the best result of 93.7 \% precision and 90.5 \% recall in non-residential areas.
+
+Different models have been proposed for panel detection through image segmentation, using Mask R-CNN {He, 2020}, TernausNet, based on U-Net {Kausika 2021}, MobileNet with U-Net backbone {Wari, 2021}, with different approaches to data preparation and application. These models consistently score higher than 90 \% in terms of precision, at the cost of higher computation times compared to the examples previously mentioned (also for very different task sizes). A couple notable aspects across publications: the size of datasets (often in the tens of thousands of images), with strong strategies for collecting and/or preprocessing, ensuring that the models have the best possible starting point to learn and develop; and the focus on a specific type of panel or problem topic, not trying to solve multiple problems with a single tool.
+
+For the purpose of this work, we have developed three approaches to the problem, to assess their strengths and merits, which will be detailed in the next subsections.
+
+\subsection{Image-based Regression}
+
+Considering that every image is labelled in terms of amount of photovoltaic and thermal solar panels, the conditions for training considering a regression approach are available. For this, deep neural networks (convolutional neural networks, CNN) were considered for their excellent capabilities in extracting spatial features, but each with a distinguishing feature.
+
+ResNet (Residual Networks) was introduced in 2015 by Microsoft, and is notorious for dealing with vanishing gradient problem by skipping connections between neuron layers. This allows the model to grow and have several layers (over 100), making it capable of learning a larger variety of features from the first to the deeper layers, without suffering from performance degradation.
+
+DenseNet follows on the footsteps of ResNet, and was introduced in 2016 by Huang \textit{et al.}, whereby the idea of skipping connections is taken further, and every layer prior to a given layer is connected to it. This avoids the chain multiplication problem (which leads to vanishing gradients), while reusing previously learned features, retaining relevant information throughout the deepness of the CNN. This architecture also has the benefit of using less parameters than CNN in general (and ResNet as well).
+
+EfficientNet (EffNet), the most recent of this group was introduced by Google AI in 2019, and departs from the direct implementation of the aforementioned methods, dealing with vanishing gradients given its intrinsic architecture. By having MB Conv (Mobile Inverted Bottleneck Convolution) as its building block, it allows to extract spatial features by expanding the number of channels to perform depthwise convolution and applying separate filters per channels \textbf{(verificar a nomenclatura)}, that is then compressed to the original size of the input. Whilst this happens, the mechanism of squeeze-and-excitation determines the importance of said features, further addressing the vanishing gradient problem. This architecture is then scaled via compound scaling (rather than arbitrarily), whereby the size of the CNN (depth x width and input resolution) is scaled in a balanced manner, with the compound coefficient $\phi$ being adjusted by grid search.
 
 \subsection{Object Detection}
 
-\subsection{Segmentation models}
-asdasdas
+With object detection, the model is trained based on bounding boxes surrounding the subject of interest, in order to be able to identify them in new environments and types of images. With multiple classes, the model discern between labels with class probabilities, estimated from the extracted features of the assessed boxes (using a CNN) throughout the image. One of the most famous and used models is YOLO ("You Only Look Once") introduced in 2015 by Redmon \& Fardhi, being a crucial model in fast object detection and localization. In a single stage, the model addresses the localization and detection problems, where a CNN backbone (that has changed with the released versions) is used, with feature fusion layers (akin to the way learned features are reused, involving various algorithms), and an output of the likelihood of a class and the location of the bounding boxes.
 
-\section{Methodology}.
+\subsection{Instance Segmentation}
+
+Building on the concepts presented before on object detection, instance segmentation addresses the problem of identification by incorporating the information of object masks. These are tighter around the object (than bounding boxes), which serve to add a layer to the YOLO algorithm. A global prototype mask (that works with a separate, smaller CNN) is generated for the whole image - this way once the bounding box is determined, mask coefficients are estimated in order to combine the prototype masks into an instance specific mask. This approach avoids per mask full resolution segmentation, keeping the model size small and fast.
+
+\section{Methodology}
 
 \subsection{Data description (com EDA)}
 
-o dados, fornecidos pela propria competicao (citar), consistem em 4419 imagens, complementadas por metadata referente à origin da imagem e ao placement dos paineis, providing context on installation environments.
-
-da totalidade destas imagens, 3312 (75\%) contêm indicacoes das delimitacoes de conjutnos de paineis e de boilers, atraves de poligonos, assim como a quantidade que se encontra dentro de cada qual. as restantes 1107 (25\%) nao têm esta informacao. Assim, por opcao da competicao, temos uma distribuicao de treino e teste de 75/25
-
+The dataset was provided within the Zindi challenge, consisting of 4419 images (from drone and satellite sources), and per image metadata, consisting of the source (drone or satellite), mask placement, and context of the installation surroundings (e.g., roof, floor, array).\textbf{info do pie chart} The proportion between photovoltaic and thermal solar panels is heavily imbalanced, with 95 \% of the dataset corresponding to photovoltaic panels.
+%o dados, fornecidos pela propria competicao (citar), consistem em 4419 imagens, complementadas por metadata referente à origin da imagem e ao placement dos paineis, providing context on installation environments.
+Of all the images, 3312 (75 \%) have detailed information on the masks (location, number of panels within, if they are photovoltaic or thermal). The remaining 1107 (25 \%) do not have this information, only the number of photovoltaic and thermal panels in the image. Hence, per design of the competition the train/test split is 75/25.
+%da totalidade destas imagens, 3312 (75\%) contêm indicacoes das delimitacoes de conjutnos de paineis e de boilers, atraves de poligonos, assim como a quantidade que se encontra dentro de cada qual. as restantes 1107 (25\%) nao têm esta informacao. Assim, por opcao da competicao, temos uma distribuicao de treino e teste de 75/25
+\begin{comment}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_origin_classes.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{Eu removia esta imagem e usava apenas a seguinte com label em cada imagem do estilo D | roof, S | S-unknown}
     \label{fig:data_origin_classes}
 \end{figure}
+\end{comment}
 
 \begin{figure}[H]
     \centering
@@ -93,19 +116,23 @@ da totalidade destas imagens, 3312 (75\%) contêm indicacoes das delimitacoes de
     \label{fig:data_placement_classes}
 \end{figure}
 
-nas figuras \ref{fig:data_origin_classes} e \ref{fig:data_placement_classes} podem-se observar as classes de origin e de placement relativas as imagens. as origins da imagem podem ser drone image (D) or satellite image (S), while the placement classes (Installations) sao distribuidas por on rooftops or terraces (roof), satellite images where the specific placement could not be determined (S-unknown), in open courtyards or gardens (openspace), that span both rooftops and outdoor spaces (r\_openspace).
+In Fig. \ref{fig:data_placement_classes} the image origin and placement are displayed, which according to the challenge information were labelled by expert personnel. Where the placement class wasn't conclusive, the images are labelled as "S-unknown" (the remaining examples are self explanatory). Besides the two classes to be identified, the context and origin of the images means a considerable number of combinations for the model to learn, where some of these combinations might (and certainly are), under-represented given the relatively small dataset.
 
+%nas figuras \ref{fig:data_origin_classes} e \ref{fig:data_placement_classes} podem-se observar as classes de origin e de placement relativas as imagens. as origins da imagem podem ser drone image (D) or satellite image (S), while the placement classes (Installations) sao distribuidas por on rooftops or terraces (roof), satellite images where the specific placement could not be determined (S-unknown), in open courtyards or gardens (openspace), that span both rooftops and outdoor spaces (r\_openspace).
 
+\begin{comment}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_distribution.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{Eu retirava esta imagem e tentava combinar a informação do número de thermal solar e photovoltaic em cada um dos gráficos seguintes (respectivamente).}
     \label{fig:data_distribution}
 \end{figure}
+\end{comment}
 
-ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
+%ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
 
-tendo em conta os poligonos referentes aos panels e boilers, também foi analisada a distribuicao da quantidade de paineis e de boilers naos poligonos que delimitam os conjuntos.
+The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in \ref{fig:data_boil_distribution}
+%tendo em conta os poligonos referentes aos panels e boilers, também foi analisada a distribuicao da quantidade de paineis e de boilers naos poligonos que delimitam os conjuntos.
 
 \begin{figure}[H]
     \centering
@@ -121,8 +148,9 @@ tendo em conta os poligonos referentes aos panels e boilers, também foi analisa
     \label{fig:data_panel_distribution}
 \end{figure}
 
+\begin{comment}
 as figuras \ref{fig:data_boil_distribution} e \ref{fig:data_panel_distribution} revelam esta distribuicao, revelando que .... (fiquei sem inspiracao)
-
+\end{comment}
 
 \begin{figure}[H]
     \centering
@@ -218,6 +246,7 @@ ao verificar o melhor desempenho pelo efnet, tanto no treino como validacao como
 Batch Size conta? & $\{16, 32, 64\}$ \\
 Optimizer & AdamW \\
 Learning Rate & $[10^{-5}, 10^{-3}]$ \\
+Weight Decay & $[10^{-5}, 10^{-3}]$ \\
 Dropout & $\{0.2, 0.3, 0.4\}$ \\
 Scheduler & CosineAnnealingWarmRestarts \\
 T\_0 & $\{3, 5, 7, 10\}$ \\
@@ -233,7 +262,21 @@ na tabela \ref{parametroszulp} pode se verificar o espaco possivel de hyperparam
 
 contudo esta cross validation não foi muito tipica devido aos elevados tempos de ajuste dos modelos. os dados de treino foram separados em 5 folds (80/20), mas cada conjunto de hyperparametros so foi ajustado 3 vezes, e não as tipicas 5 vezes.
 
-de modo a escolher o melhor modelo usou-se o validation mae médio como métrica tendo sido o melhor conjunto de hyperparametros dado por ... meta06
+de modo a escolher o melhor modelo usou-se o validation mae médio como métrica tendo sido o melhor conjunto de hyperparametros dado por 
+
+- batch 16
+
+- leraning 1e-4
+
+- weight dec 1e-4
+
+- dropout 0.4
+
+- t0 5
+
+- tmul 2
+
+meta06
 
 para alem disso é tbm importante indicar o uso de: 
 
@@ -274,44 +317,106 @@ Test Set & 0.8434 & 1107 \\
 
 quanto as metricas de erro presentes na Table \ref{tab:model01_results}, apesar de so termos o MAE parece n haver sinais de overiffing pelas medidas serem semelhantes
 
-\subsection{yolo}
+\subsection{Segmentation Model}
 
-ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem
 
-problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
 
-surgiu a ideia de criar 4 classeS: boiler, panel, conjunto de boileres, conjunto de panels, so q devido ao class imbalance o modelo teve resultados nao satisfatorios o suficente
-
-METER GRAFICO IMABALANCE
+\textbf{isto tbm é do yolo de obj id, ns onde se meta:} ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem. problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
 
 entao decidiu-se rever o dataset e separar manualmente os poligonos em paineis e boileres indivudais, deixando de existir grupos de paineis
 
 o yolo apresentou assim mt melhores resultados, apesar da reducao da dimensao do dataset em termos de imagens mas aumento de amostras do que realmente sao paineis e boilers individuais
 
+\textbf{relativamente ao yolo seg:}
 
-fazer ja learning curve ou correr de novo last yolo?
+de modo a encontrar o melhor modelo de segmentacao dos paineis e boilers, tal como no efnet (depende se vem dps ou antes) os dados foram dividicos em 5 folds, e para cada conjunto de hyperparametros os modelos foram ajustados em 3 conjuntos diferentes de 4 folds sendo validado no restante, e o modelo escolhido foi aaquele com menor mae médio nos folds de validacao
 
-IDEIA: correr de novo o last yolo, mas mudar hyperparemtros (lernaring rate, adamw, etc.), a ver se temos uma solucao melhor
-
-
-
-\section{faa02 ig}
-
+o conjunto de pesquisa de hyperparemetros é dado pela tabela seguinte, mas é de notar q nsao sao testadas todas as combinacoes mas apenas algumas aleatorias
 
 
 \begin{table}[H]
 \centering
-\caption{Error metrics for the train and test set (CF-LR), along with the number of samples for each.}
-\label{tab:model01_results}
-\begin{tabular}{lccc}
+\caption{yolo seg model hyp}
+\label{parametroszulp}
+\begin{tabular}{ll}
 \toprule
-\textbf{Dataset} & \textbf{RMSE} & \textbf{MAE} & \textbf{Support} \\
+\textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Train Set & 0.58842 & 0.44604 & 80668 \\
-Test Set & 1.24037 & 0.90651 & 20168 \\
+Batch Size conta? & $\{8, 32, 16\}$ \\
+yolo & \{yolo11l-seg, yolo11m-seg, yolov8l-seg\} \\
+imgsize & 512 \\
+augment & True \\
+patiente & $[10, 25]$ \\
+cls & $[0.5, 2.5]$ \\
+lr0 & $[10^{-4}, 10^{-3}]$ \\
+lrf & $[0.01, 0.1]$ \\
+mixup & $[0, 0.5]$ \\
+copy\_paste & $[0, 0.8]$ \\
+scale & $[0.5, 1]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model02_mae_boxplot.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
+    \label{fig:model02_mae_boxplot}
+\end{figure}
+
+a fig \ref{fig:model02_mae_boxplot} demonstra o mae para os diferentes modelos ajustados na busca dos melhores hyperparemtros, tendo sido o YOLOv11L 2 a obter o menos MAE médio nas suas validações, tendo sido ele o escolhido. seguem-se abaixo os seus hyperparemetros
+
+- yolo yolo11l-seg
+- imgsize 512
+- augment True
+- patiente 25
+- lr0 $10^{-3}$
+- lrf 0.1
+- cls 0.5
+- mixup 0
+- copy paste 0
+- scale 0.5
+
+os restantes parametros sao os que vêm por defeito no package ultralytics
+%https://github.com/ultralytics/ultralytics
+referentes ao modelo yolo11l-seg
+
+quanto aos resultados do modelo em referencia, é de notar que o mesmo foi treinado tendo em conta o segmentar os objetos (pan e boilers) da melhor forma possivel, pelo que as metricas do ajuste do modelo sao referentes a isso e nao ao problema de contagem, sendo esta contagem apenas feita apos o modelo ajustar os segmentos as imagens
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model02_yolof1.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
+    \label{fig:model02_yolof1}
+\end{figure}
+
+a fig. \ref{fig:model02_yolof1} mostra a metrica f1 relativa a segemntacao do segundo fold do modelo, revelando um melhor desempenho dos photovoltaic em relacao aos thermal, mas sem uma diferenca significativa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model02_lc.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:model02_lc}
+\end{figure}
+
+na fig. \ref{fig:model02_lc} pode-se verificar a learning curve do melhor modelo, a demonstrar a sua convergencia sem sinais de overiffint. apenas com um possivel outlier na loss, que pode ter devido a algum erro de computacao por parte do calculo do segmentation loss por parte do yolo. é possível ver tbm a paragem do modelo após 92 epochs por early stopping.
+
+\begin{table}[H]
+\centering
+\caption{Error metrics for the Segmentation Model, for the train and test set, along with the number of samples for each.}
+\label{tab:model02_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Dataset} & \textbf{MAE} & \textbf{Support} \\
+\midrule
+Train Set & 1.5645 & 3312 \\
+Test Set & 1.3415 & 1107 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+quanto as metricas relacionadas com a contagem dos pan e boil, o nosso problema original, o seu resultado é apresentado na tabela \ref{tab:model02_results}
+
 
 \section{Discussion} 
 
