@@ -4,6 +4,7 @@
 \usepackage{float} 
 \usepackage{url}  
 \usepackage{multirow}
+\usepackage{caption}
 \usepackage{subcaption}
 \usepackage{booktabs}
 \usepackage{cite}
@@ -99,20 +100,20 @@ Building on the concepts presented before on object detection, instance segmenta
 The dataset was provided within the Zindi challenge, consisting of 4419 images (from drone and satellite sources), and per image metadata, consisting of the source (drone or satellite), mask placement, and context of the installation surroundings (e.g., roof, floor, array).\textbf{info do pie chart} The proportion between photovoltaic and thermal solar panels is heavily imbalanced, with 95 \% of the dataset corresponding to photovoltaic panels.
 %o dados, fornecidos pela propria competicao (citar), consistem em 4419 imagens, complementadas por metadata referente à origin da imagem e ao placement dos paineis, providing context on installation environments.
 Of all the images, 3312 (75 \%) have detailed information on the masks (location, number of panels within, if they are photovoltaic or thermal). The remaining 1107 (25 \%) do not have this information, only the number of photovoltaic and thermal panels in the image. Hence, per design of the competition the train/test split is 75/25.
+
 %da totalidade destas imagens, 3312 (75\%) contêm indicacoes das delimitacoes de conjutnos de paineis e de boilers, atraves de poligonos, assim como a quantidade que se encontra dentro de cada qual. as restantes 1107 (25\%) nao têm esta informacao. Assim, por opcao da competicao, temos uma distribuicao de treino e teste de 75/25
-\begin{comment}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_origin_classes.png}
-    \caption{Eu removia esta imagem e usava apenas a seguinte com label em cada imagem do estilo D | roof, S | S-unknown}
+    \caption{Images of photovoltaic panels placed on the roof, from drone (left side) and satellite (right side). The difference in resolution between them is evident.}
     \label{fig:data_origin_classes}
 \end{figure}
-\end{comment}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_placement_classes.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{The different panel placement possibilities (top right is from satellite imagery). Bottom left image shows an image that is atypical for a drone style image.}
     \label{fig:data_placement_classes}
 \end{figure}
 
@@ -120,14 +121,12 @@ In Fig. \ref{fig:data_placement_classes} the image origin and placement are disp
 
 %nas figuras \ref{fig:data_origin_classes} e \ref{fig:data_placement_classes} podem-se observar as classes de origin e de placement relativas as imagens. as origins da imagem podem ser drone image (D) or satellite image (S), while the placement classes (Installations) sao distribuidas por on rooftops or terraces (roof), satellite images where the specific placement could not be determined (S-unknown), in open courtyards or gardens (openspace), that span both rooftops and outdoor spaces (r\_openspace).
 
-\begin{comment}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_distribution.png}
-    \caption{Eu retirava esta imagem e tentava combinar a informação do número de thermal solar e photovoltaic em cada um dos gráficos seguintes (respectivamente).}
+    \caption{Portion of the number of photovoltaic and thermal solar panels counted from the available metadata.}
     \label{fig:data_distribution}
 \end{figure}
-\end{comment}
 
 %ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
 
@@ -136,56 +135,80 @@ The masks are not consistent throughout the dataset, with varying number of pane
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/data_boil_distribution.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_boil_distribution}
+    \begin{subfigure}[b]{\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{assets/data_boil_distribution.png}
+        \caption{Distribution of the number of thermal solar panels per segmentation mask.}
+        \label{fig:data_boil_distribution}
+    \end{subfigure}
+
+    \vspace{0.5em} % Optional spacing between images
+
+    \begin{subfigure}[b]{\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{assets/data_panel_distribution.png}
+        \caption{Distribution of the number of photovoltaic panels per segmentation mask.}
+        \label{fig:data_panel_distribution}
+    \end{subfigure}
+    \caption{Distribution of the number of panels within a single mask.}
+    \label{fig:combined_data_distributions}
 \end{figure}
+
+
+
+%as figuras \ref{fig:data_boil_distribution} e \ref{fig:data_panel_distribution} revelam esta distribuicao, revelando que .... (fiquei sem inspiracao)
+
+
+From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed below.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/data_panel_distribution.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_panel_distribution}
+    \begin{subfigure}[b]{\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{assets/data_segmentation_mask.png}
+        \caption{Sample image of accurate labelling, with a single panel per mask.}
+        \label{fig:data_segmentation_mask}
+    \end{subfigure}
+
+    \vspace{0.5em}
+
+    \begin{subfigure}[b]{\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{assets/data_poly_problems.png}
+        \caption{Sample images of incorrectly marked masks: (on the left) mask distorted, misrepresenting the panel; (on the right) excessive objects within a single mask.}
+        \label{fig:data_poly_problems}
+    \end{subfigure}
+    \caption{Sample images from the Zindi dataset.}
+    \label{fig:combined_segmentation_poly_issues}
 \end{figure}
 
-\begin{comment}
-as figuras \ref{fig:data_boil_distribution} e \ref{fig:data_panel_distribution} revelam esta distribuicao, revelando que .... (fiquei sem inspiracao)
-\end{comment}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/data_segmentation_mask.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_segmentation_mask}
-\end{figure}
-
-por fim, na imagem \ref{fig:data_segmentation_mask} pode-se verificar uma das imagens de treino e os respetivos poligonos referentes aos paineis e boilers convertidos numa mascara de segmentacao, onde se verifica a presença de 4 grupos de solar panels, sendo cada um destes um grupo unitário, e 1 grupo de boilers, tambem unitario.
+%por fim, na imagem \ref{fig:data_segmentation_mask} pode-se verificar uma das imagens de treino e os respetivos poligonos referentes aos paineis e boilers convertidos numa mascara de segmentacao, onde se verifica a presença de 4 grupos de solar panels, sendo cada um destes um grupo unitário, e 1 grupo de boilers, tambem unitario.
 
 
-\subsection{data: pre processamento e ques}
+\subsection{Preprocessing}
 
-atraves de algumas discussoes do forum da competicao, uma analise mais aprofundada de algumas imagens aleator e dos dados de treino, foram verficados alguns obstaculos para a aplicacao dos modelos.
+The discussion forum for the competition was a fruitful source of information on the dataset and how to address it. As seen above, the incorrectly defined masks, and the masks with several panels represented hindrances to achieve the best possible performance. Besides that, some of the masks were shifted from the actual position of the panels, which considering that all were identically shifted, seemed deliberate from the competition. By manually analysing every image  it was possible to detect such images (with wrongly drawn masks and shifted), and correct them. Upon completing the dataset revision, 263 of the training samples were lost due to poorly drawn masks (the remaining images that had misaligned masks were corrected).
 
-nomeadamente, haviam linhas por poligono ao inves de linhas por imagem, as coordenadas dos poligonos eram strings ao inves de floats e algumas coordenadas tinham letras pelo meio.
+%atraves de algumas discussoes do forum da competicao, uma analise mais aprofundada de algumas imagens aleator e dos dados de treino, foram verficados alguns obstaculos para a aplicacao dos modelos.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/data_poly_problems.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
-    \label{fig:data_poly_problems}
-\end{figure}
+%nomeadamente, haviam linhas por poligono ao inves de linhas por imagem, as coordenadas dos poligonos eram strings ao inves de floats e algumas coordenadas tinham letras pelo meio.
 
-apos estas correções, uma das dificuldades tornou-se a validade dos poligonos. alguns poligonos tinham deslocacoes em relacao a posicao real dos paineis, outros tinham vertices misaligned, como se pode ver na imagem \ref{fig:data_poly_problems} alguns exemplos. apesar de não ser um erro o excessive object inclusion, esta torna-se uma barreira a aplicacao direta de modelos como o yolo, que requerem uma mascara por objeto unitario.
 
-de modo a combtaer a validade dos poligonos, foi efetuada uma revisao manual de cada qual, envelvendo a correcao de alguns poligonos deslocados e a eliminacao de imagens com poligonos misaligned.
+%apos estas correções, uma das dificuldades tornou-se a validade dos poligonos. alguns poligonos tinham deslocacoes em relacao a posicao real dos paineis, outros tinham vertices misaligned, como se pode ver na imagem \ref{fig:data_poly_problems} alguns exemplos. apesar de não ser um erro o excessive object inclusion, esta torna-se uma barreira a aplicacao direta de modelos como o yolo, que requerem uma mascara por objeto unitario.
+
+%de modo a combtaer a validade dos poligonos, foi efetuada uma revisao manual de cada qual, envelvendo a correcao de alguns poligonos deslocados e a eliminacao de imagens com poligonos misaligned.
 
 % https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25548
 % GAJO QUE AJUDOU COM O ACETRTAR OS POLYGONS REFERENCIAR ?
 
-com este processo foram perdidaas apenas 263 imagens de treino.
+%com este processo foram perdidaas apenas 263 imagens de treino.
 
 %por fim, foi criado um dataset de validacao a partir do de treino, tendo esta divisao sido feita numa proporcao de 80/20
 
+Once the dataset was ready, the (online) data augmentation process was devised in order to increase the number of training and diversify it, in order to enhance the generalizability of the trained models. The transformations HorizontalFlip, VerticalFlip, RandomRotate90, GaussianBlur, CLAHE (Contrast Limited Adaptive Histogram Equalization), HueSaturationValue and Normalize were applied before all training cycles. The images were all resized to 512x512, to lower the computational burden and homogeneize the code throughout the pipeline. 
+
+\begin{comment}
 para alem disso, interessa também referir, que foi realizada data augmentation, nao como um processo de pre processamento, mas de forma online, no treino de todos os modelos, com as trasnformacoes
 HorizontalFlip
 VerticalFlip
@@ -194,13 +217,13 @@ GaussianBlur
 CLAHE
 HueSaturationValue
 Normalize (dizer q fizemos normalizcao dos pixeis)
-
+\end{comment}
 % DIZEMOS QUE USAMOS SMP 512X512 ?
 
 
 
 
-\subsection{Models implemented}
+\subsection{Results}
 
 ....
 
@@ -210,7 +233,7 @@ Normalize (dizer q fizemos normalizcao dos pixeis)
 aaa
 
 
-\section{djaisjd Models}
+\section{Models}
 
 llalal
 
@@ -349,7 +372,7 @@ augment & True \\
 patiente & $[10, 25]$ \\
 cls & $[0.5, 2.5]$ \\
 lr0 & $[10^{-4}, 10^{-3}]$ \\
-lrf & $[0.01, 0.1]$ \\
+lrf & $[0.01, 0.1, 1]$ \\
 mixup & $[0, 0.5]$ \\
 copy\_paste & $[0, 0.8]$ \\
 scale & $[0.5, 1]$ \\
