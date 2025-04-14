@@ -122,22 +122,24 @@ Of all the images, 3312 (75 \%) have detailed information on the masks (location
 In Fig. \ref{fig:data_placement_classes} the image origin and placement are displayed, which according to the challenge information were labelled by expert personnel. Where the placement class wasn't conclusive, the images are labelled as "S-unknown" (the remaining examples are self explanatory). Besides the two classes to be identified, the context and origin of the images means a considerable number of combinations for the model to learn, where some of these combinations might (and certainly are), under-represented given the relatively small dataset.
 
 %nas figuras \ref{fig:data_origin_classes} e \ref{fig:data_placement_classes} podem-se observar as classes de origin e de placement relativas as imagens. as origins da imagem podem ser drone image (D) or satellite image (S), while the placement classes (Installations) sao distribuidas por on rooftops or terraces (roof), satellite images where the specific placement could not be determined (S-unknown), in open courtyards or gardens (openspace), that span both rooftops and outdoor spaces (r\_openspace).
-
+\begin{comment}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_distribution.png}
     \caption{Portion of the number of photovoltaic and thermal solar panels counted from the available metadata.}
     \label{fig:data_distribution}
 \end{figure}
+\end{comment}
 
 %ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
 
 The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in Fig. \ref{fig:data_objectdistribution}.
 
+From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed below.
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/data_objectdistribution.png}
-    \caption{Distribution of the number of panels within a single mask.}
+    \caption{Distribution of the number of panels within a single mask. -> verificar onde ainda se apanha boiler ou panel em vez da nomenclatura acordada}
     \label{fig:data_objectdistribution}
 \end{figure}
 
@@ -162,8 +164,6 @@ The masks are not consistent throughout the dataset, with varying number of pane
 %    \label{fig:combined_data_distributions}
 %\end{figure}
 
-From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed below.
-
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{\linewidth}
@@ -172,8 +172,6 @@ From the sample images below, the difference in the quality of the masks is star
         \caption{Sample image of accurate labelling, with a single panel per mask.}
         \label{fig:data_segmentation_mask}
     \end{subfigure}
-
-    \vspace{0.5em}
 
     \begin{subfigure}[b]{\linewidth}
         \centering
@@ -227,7 +225,7 @@ Normalize (dizer q fizemos normalizcao dos pixeis)
 
 In the following subsections, A through C, we present the approach and results of the developed models. The hybrid model \textit{zulo40} is presented as benchmark, as it was one of the best performing in the competition and was kindly shared in the discussion forum. The models from in the section \textit{A. Image-based Regression} are based on this model's approach.
 
-The training examples were split between training and validation (80/20) across all the models' training.
+The training examples were split between training and validation (80/20) across all the models' training. The best set of hyperparameters was selected from a randomized search in a cross validation (CV) set up. Unlike what is commonly done with K-fold CV, due to the long processing times and high computational load, the number of CV repetitions was adjusted 3 times (and not the usual 5 times), and averaged over them. We acknowledge the downside of this approach, particularly the fact that only 60 \% of the data is exposed to validation and the reduced diversity of the models trained. These aspects become particularly evident due to the relatively small size of the dataset.
 
 \subsection{Image-based Regression}
 
@@ -248,8 +246,6 @@ After extracting the features they are processed through fully connected layers,
 %a arquitetura? desta familia de modelos pode ser verificada na imagem \ref{fig:nn}, que consite num hybrid model de neural networks, ao usar um bacbone (transfer learning) para extrarir features da imagem (cnn's) e snn? para extrar features da metadata. de seguida, é usado um attention head para juntar todas estas features, da imagem e da metadata, para posteriormente obtermos o resultado da regressao
 
 The backbones tested were DenseNet121, EfficientNetv2B3 and ResNet101, and after an initial assessment, EfficientNetv2B3 provided with the best results and the hyperparameters were further fine tuned with the ranges specified in Table \ref{parametroszulp}.
-
-The best set of hyperparameters was selected from a randomized search in a cross validation (CV) set up. Unlike common K-fold CV, due to the long processing times and high computational load, the number of CV repetitions was adjusted 3 times (and not the usual 5 times), and averaged over them. We acknowledge the downside of this approach, particularly the fact that only 66 \% of the data is exposed to validation and the reduced diversity of the models trained. These aspects become particularly evident due to the relatively small size of the dataset.
 
 The criteria for selection of the best model was the MAE (mean absolute error, the metric used in the Zindi challenge), which gave the following hyperparameters marked in bold in Table \ref{parametroszulp}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
 %ademais, como backbone foi exprimentado um densenet121, efficientnetv2B3 e resnet101, através da divisao dos dados em treino e validacao e o uso de data augmentation nos dados de treino.
@@ -350,6 +346,8 @@ Test Set & 0.8434 & 1107 \\
 % HV: estamos a falar de falhar 0.3 paineis por imagem, continua a arredondar para o 0, diria q signnigicativo só a partir de valores proximos de 1 ou superiores. a metrica q tens uma indica q em media dizes +- .5 paineis e a outra +- .8, não é algo percentual, é absoluto, dai nao achar significativo
 \subsection{Object Detection}
 
+Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, we have individually reviewed roughly 300 images \textbf{(confirm number)}, and created individual masks for each panel (either solar thermal or photovoltaic), which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly \textbf{checkar qual o valor}.
+\begin{comment}
 \textbf{isto tbm é do yolo de obj seg, ns onde se meta:} ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem. problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
 
 entao decidiu-se rever o dataset e separar manualmente os poligonos em paineis e boileres indivudais, deixando de existir grupos de paineis
@@ -357,46 +355,50 @@ entao decidiu-se rever o dataset e separar manualmente os poligonos em paineis e
 o yolo apresentou assim mt melhores resultados, apesar da reducao da dimensao do dataset em termos de imagens mas aumento de amostras do que realmente sao paineis e boilers individuais
 
 \textbf{le o instance segmentation, o inicio, antes de começares este, so para ver se ha algo q se deva puxar para aqui}
+\end{comment}
 
-bla bla, pesquisa de hyperperamentros
+As for the previous section, the criteria for selection of the best model was the MAE, which rendered the following hyperparameters marked in bold in Table \ref{parametrosobjid}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
 
-yolos dedicados a bonding boxes, object detetcion.....
+%bla bla, pesquisa de hyperperamentros
 
+%yolos dedicados a bonding boxes, object detetcion.....
 
 \begin{table}[H]
 \centering
-\caption{yolo obj id model hyp}
+\caption{Hyperparameter space for the YOLO model. The bold values correspond to the selected hyperparameters.}
 \label{parametrosobjid}
 \begin{tabular}{ll}
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size conta? & $\{16, 32\}$ \\
-yolo & \{yolo11l, yolo11m, yolov8l\} \\
-imgsize & 512 \\
-augment & True \\
-patiente & $[15, 25]$ \\
-cls & $[0.5, 1.5]$ \\
-lr0 & $[10^{-5}, 10^{-3}]$ \\
-lrf & $[0.1, 1]$ \\
-mixup & $[0, 0.75]$ \\
-copy\_paste & $[0, 0.75]$ \\
-scale & $[0.5, 1]$ \\
+Batch Size & $\{16, \mathbf{32}\}$ \\
+yolo & \{yolo11l, yolo11m, \textbf{yolov8l}\} \\
+imgsize & \textbf{512} \\
+augment & \\textbf{True} \\
+patience & $[15, \mathbf{25}]$ \\
+cls & $[0.5, \mathbf{1.5}]$ \\
+lr0 & $[\mathbf{20^{-5}}, 10^{-3}]$ \\
+lrf & $[0.1, \mathbf{1}]$ \\
+mixup & $[0, \mathbf{0.75}]$ \\
+copy\_paste & $[0, \mathbf{0.75}]$ \\
+scale & $[0.5, \mathbf{1}]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-after fitting multiple models with the same type of cv said above
+%after fitting multiple models with the same type of cv said above
+
+From the different model fits, in Fig. \ref{fig:model03_mae_boxplot} the MAE ranges are displayed with boxplots, where the model YOLOv8L has been fit three different times for different combinations of hyperparameters, evidencing the relevance of this step. From the group, the model with lowest mean MAE was selected (the hyperparameters selected are in bold in Table \ref{parametrosobjid}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model03_mae_boxplot.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{CV MAE for each model. Each boxplot represents the values obtained during the cross validation of each model.}
     \label{fig:model03_mae_boxplot}
 \end{figure}
 
 % MODEL03 = OBJ ID pq foi a ordem que fizemos na realidade (nao a do report)
-
+\begin{comment}
 with yolov8l 3 with the lowest mean mae, the best hyperparemteres were
 
 - yolov8L
@@ -412,30 +414,48 @@ with yolov8l 3 with the lowest mean mae, the best hyperparemteres were
 - scale 0.9
 
 and the other hyperparameteres fixed to the deafult of ultralytics yolov8L model
+\end{comment}
 
+The results from the best model are shared below, where it is important to bear in mind that the metrics shared are for the model's main goal (i.e., object identification), and only after the training it was possible to count apply the model to the test set and count the number of panels of each kind.
 
-\textbf{copia do yolo seg:}
-quanto aos resultados do modelo em referencia, é de notar que o mesmo foi treinado tendo em conta o segmentar os objetos (pan e boilers) da melhor forma possivel, pelo que as metricas do ajuste do modelo sao referentes a isso e nao ao problema de contagem, sendo esta contagem apenas feita apos o modelo ajustar os segmentos as imagens
+%\textbf{copia do yolo seg:}
+%quanto aos resultados do modelo em referencia, é de notar que o mesmo foi treinado tendo em conta o segmentar os objetos (pan e boilers) da melhor forma possivel, pelo que as metricas do ajuste do modelo sao referentes a isso e nao ao problema de contagem, sendo esta contagem apenas feita apos o modelo ajustar os segmentos as imagens
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{assets/model03_yolof1.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
-    \label{fig:model03_yolof1}
-\end{figure}
-
-bla bla tudo bem, bem proximos....
-
-learning curve
+Unlike in the previous section, the cross-validation and training loss curves do not evidence the spikes seen before (no learning rate scheduler used), but the axis scale might deceive the interpretation: the cross-validation loss still has a considerable variance in comparison with the training loss curve. This still is due to the difficult in generalizing the learning, with such small dataset (and the fact that 40 \% of the data are never in the validation portion of the K-fold CV). Despite this fact, the learning curves progress well and do not evidence overfitting, although the variance of the training curve increases drastically at the very late stages of training.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model03_lc.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{Learning curve for YOLOv8L, with
+Training and Cross-Validation Loss plotted (with standard
+deviation in shade).}
     \label{fig:model03_lc}
 \end{figure}
 
-sem sinais de overfitting
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model03_yolof1.png}
+    \caption{F1-Confidence curves for YOLOv8L (graph automatically generated from the ultralytics package \textbf{não nos podemos esquecer de referenciar o código usado)}.}
+    \label{fig:model03_yolof1}
+\end{figure}
+
+%sem sinais de overfitting
+
+The resulting F1-Confidence curve (Fig. \ref{tab:model03_results}) is a typical analysis for this type of models, as it relates two important metrics: F1-score, which is a result of the precision and recall of the predicted samples; and confidence, which consists of the product of the probability of a given object existing within the bounding box, and the probability of a given class given that object is in the box. The equation for confidence is available below.
+
+\[
+\text{Confidence} = P(\text{object}) \times P(\text{class} \mid \text{object})
+\]
+
+Moreover, confidence is a result of the training process, where during each image pass through the CNN the probabilities for a objectness (i.e., presence of object) and class are learned from training. This output serves as the final layer's activation, shaped by the training, which will reflect the training and be used during inference stage to assess detection certainty.
+
+The evaluation of predictions (i.e., evaluating true/false positive/negative) is based on IoU (Intersection over Union), comparing the predicted mask with the ground-truth for that image. It also allows to avoid the usage of overlapping predictions, removing redundant bounding boxes.
+
+\[
+\text{IoU} = \frac{\text{Area of } (B_p \cap B_{gt})}{\text{Area of } (B_p \cup B_{gt})}
+\]
+
+Despite our efforts to attain a better model, the MAE of the train and test set was among the worst evaluated, especially when considering how low the CV training MAE was.
 
 \begin{table}[H]
 \centering
@@ -445,8 +465,8 @@ sem sinais de overfitting
 \toprule
 \textbf{Dataset} & \textbf{MAE} & \textbf{Support} \\
 \midrule
-Train Set & 3.2400 & 3312 \\
-Test Set & 3.0318 & 1107 \\
+Train Set & 1.4330 & 3312 \\
+Test Set & 1.2645 & 1107 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -459,8 +479,10 @@ Test Set & 3.0318 & 1107 \\
 
 \subsection{Instance Segmentation}
 
-
-de modo a encontrar o melhor modelo de segmentacao dos paineis e boilers, tal como no efnet (depende se vem dps ou antes) os dados foram dividicos em 5 folds, e para cada conjunto de hyperparametros os modelos foram ajustados em 3 conjuntos diferentes de 4 folds sendo validado no restante, e o modelo escolhido foi aaquele com menor mae médio nos folds de validacao
+\begin{comment}
+    de modo a encontrar o melhor modelo de segmentacao dos paineis e boilers, tal como no efnet (depende se vem dps ou antes) os dados foram dividicos em 5 folds, e para cada conjunto de hyperparametros os modelos foram ajustados em 3 conjuntos diferentes de 4 folds sendo validado no restante, e o modelo escolhido foi aaquele com menor mae médio nos folds de validacao
+\end{comment}
+%JP: Passei esta parte acima para a intro deste capt, porque já tinha escrito isto no primeiro modelo. Aqui poderá referir-se que foi selecionado a partir de 4 folds em vez de 3, já que havia alguma margem computacional para aproveitar.
 
 o conjunto de pesquisa de hyperparemetros é dado pela tabela seguinte, mas é de notar q nsao sao testadas todas as combinacoes mas apenas algumas aleatorias
 
@@ -473,17 +495,17 @@ o conjunto de pesquisa de hyperparemetros é dado pela tabela seguinte, mas é d
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size conta? & $\{8, 32, 16\}$ \\
-yolo & \{yolo11l-seg, yolo11m-seg, yolov8l-seg\} \\
-imgsize & 512 \\
-augment & True \\
-patiente & $[10, 25]$ \\
+Batch Size & $\{\mathbf{8}, 32, 16\}$ \\
+yolo & \{\textbf{yolo11l-seg}, yolo11m-seg, yolov8l-seg\} \\
+imgsize & \textbf{512} \\
+augment & \textbf{True} \\
+patience & $[10, \mathbf{25}]$ \\
 cls & $[0.5, 2.5]$ \\
-lr0 & $[10^{-4}, 10^{-3}]$ \\
-lrf & $[0.01, 0.1, 1]$ \\
-mixup & $[0, 0.5]$ \\
-copy\_paste & $[0, 0.8]$ \\
-scale & $[0.5, 1]$ \\
+lr0 & $[10^{-4}, \mathbf{10^{-3}}]$ \\
+lrf & $[0.01, \mathbf{0.1}, 1]$ \\
+mixup & $[\mathbf{0}, 0.5]$ \\
+copy\_paste & $[\mathbf{0}, 0.8]$ \\
+scale & $[\mathbf{0.5}, 1]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -491,7 +513,7 @@ scale & $[0.5, 1]$ \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model02_mae_boxplot.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION -> acrescentar seg na designação dos modelos, senão vai gerar confusão}
     \label{fig:model02_mae_boxplot}
 \end{figure}
 
