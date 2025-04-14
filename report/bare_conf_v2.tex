@@ -132,34 +132,35 @@ In Fig. \ref{fig:data_placement_classes} the image origin and placement are disp
 
 %ademais, é também importante referir uma presença em maior peso de panels face ao numero de boilers, como se verifica na figura \ref{fig:data_distribution}
 
-The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in \ref{fig:data_boil_distribution}
-%tendo em conta os poligonos referentes aos panels e boilers, também foi analisada a distribuicao da quantidade de paineis e de boilers naos poligonos que delimitam os conjuntos.
+The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in Fig. \ref{fig:data_objectdistribution}.
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[b]{\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{assets/data_boil_distribution.png}
-        \caption{Distribution of the number of thermal solar panels per segmentation mask.}
-        \label{fig:data_boil_distribution}
-    \end{subfigure}
-
-    \vspace{0.5em} % Optional spacing between images
-
-    \begin{subfigure}[b]{\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{assets/data_panel_distribution.png}
-        \caption{Distribution of the number of photovoltaic panels per segmentation mask.}
-        \label{fig:data_panel_distribution}
-    \end{subfigure}
+    \includegraphics[width=1\linewidth]{assets/data_objectdistribution.png}
     \caption{Distribution of the number of panels within a single mask.}
-    \label{fig:combined_data_distributions}
+    \label{fig:data_objectdistribution}
 \end{figure}
 
-
-
-%as figuras \ref{fig:data_boil_distribution} e \ref{fig:data_panel_distribution} revelam esta distribuicao, revelando que .... (fiquei sem inspiracao)
-
+%\begin{figure}[H]
+%    \centering
+%    \begin{subfigure}[b]{\linewidth}
+%        \centering
+%        \includegraphics[width=\linewidth]{assets/data_boil_distribution.png}
+%        \caption{Distribution of the number of thermal solar panels per segmentation mask.}
+%        \label{fig:data_boil_distribution}
+%    \end{subfigure}
+%
+%    \vspace{0.5em} % Optional spacing between images
+%
+%    \begin{subfigure}[b]{\linewidth}
+%        \centering
+%        \includegraphics[width=\linewidth]{assets/data_panel_distribution.png}
+%        \caption{Distribution of the number of photovoltaic panels per segmentation mask.}
+%        \label{fig:data_panel_distribution}
+%    \end{subfigure}
+%    \caption{Distribution of the number of panels within a single mask.}
+%    \label{fig:combined_data_distributions}
+%\end{figure}
 
 From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed below.
 
@@ -346,19 +347,118 @@ Test Set & 0.8434 & 1107 \\
 
 %quanto as metricas de erro presentes na Table \ref{tab:model01_results}, apesar de so termos o MAE parece n haver sinais de overiffing pelas medidas serem semelhantes
 % JP: considerando que o erro no dataset de teste é um bom bocado pior, parece-me estar overfit, já que o modelo não consegue generalizar muito bem
+% HV: estamos a falar de falhar 0.3 paineis por imagem, continua a arredondar para o 0, diria q signnigicativo só a partir de valores proximos de 1 ou superiores. a metrica q tens uma indica q em media dizes +- .5 paineis e a outra +- .8, não é algo percentual, é absoluto, dai nao achar significativo
 \subsection{Object Detection}
 
-\subsection{Instance Segmentation}
-
-
-
-\textbf{isto tbm é do yolo de obj id, ns onde se meta:} ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem. problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
+\textbf{isto tbm é do yolo de obj seg, ns onde se meta:} ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem. problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
 
 entao decidiu-se rever o dataset e separar manualmente os poligonos em paineis e boileres indivudais, deixando de existir grupos de paineis
 
 o yolo apresentou assim mt melhores resultados, apesar da reducao da dimensao do dataset em termos de imagens mas aumento de amostras do que realmente sao paineis e boilers individuais
 
-\textbf{relativamente ao yolo seg:}
+\textbf{le o instance segmentation, o inicio, antes de começares este, so para ver se ha algo q se deva puxar para aqui}
+
+bla bla, pesquisa de hyperperamentros
+
+yolos dedicados a bonding boxes, object detetcion.....
+
+
+\begin{table}[H]
+\centering
+\caption{yolo obj id model hyp}
+\label{parametrosobjid}
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Possible Values} \\
+\midrule
+Batch Size conta? & $\{16, 32\}$ \\
+yolo & \{yolo11l, yolo11m, yolov8l\} \\
+imgsize & 512 \\
+augment & True \\
+patiente & $[15, 25]$ \\
+cls & $[0.5, 1.5]$ \\
+lr0 & $[10^{-5}, 10^{-3}]$ \\
+lrf & $[0.1, 1]$ \\
+mixup & $[0, 0.75]$ \\
+copy\_paste & $[0, 0.75]$ \\
+scale & $[0.5, 1]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+after fitting multiple models with the same type of cv said above
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model03_mae_boxplot.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:model03_mae_boxplot}
+\end{figure}
+
+% MODEL03 = OBJ ID pq foi a ordem que fizemos na realidade (nao a do report)
+
+with yolov8l 3 with the lowest mean mae, the best hyperparemteres were
+
+- yolov8L
+- batch 32
+- imgsize 512
+- agument True
+- patient 20
+- cls 1.5
+- lr0 2e-4
+- lrf 1
+- mixup 0.75
+- copypaste 0.75
+- scale 0.9
+
+and the other hyperparameteres fixed to the deafult of ultralytics yolov8L model
+
+
+\textbf{copia do yolo seg:}
+quanto aos resultados do modelo em referencia, é de notar que o mesmo foi treinado tendo em conta o segmentar os objetos (pan e boilers) da melhor forma possivel, pelo que as metricas do ajuste do modelo sao referentes a isso e nao ao problema de contagem, sendo esta contagem apenas feita apos o modelo ajustar os segmentos as imagens
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model03_yolof1.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
+    \label{fig:model03_yolof1}
+\end{figure}
+
+bla bla tudo bem, bem proximos....
+
+learning curve
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/model03_lc.png}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \label{fig:model03_lc}
+\end{figure}
+
+sem sinais de overfitting
+
+\begin{table}[H]
+\centering
+\caption{Error metrics for the Object Detection Model, for the train and test set, along with the number of samples for each.}
+\label{tab:model02_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Dataset} & \textbf{MAE} & \textbf{Support} \\
+\midrule
+Train Set & XXXXXX & 3312 \\
+Test Set & XXXXXX & 1107 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+\subsection{Instance Segmentation}
+
 
 de modo a encontrar o melhor modelo de segmentacao dos paineis e boilers, tal como no efnet (depende se vem dps ou antes) os dados foram dividicos em 5 folds, e para cada conjunto de hyperparametros os modelos foram ajustados em 3 conjuntos diferentes de 4 folds sendo validado no restante, e o modelo escolhido foi aaquele com menor mae médio nos folds de validacao
 
@@ -368,7 +468,7 @@ o conjunto de pesquisa de hyperparemetros é dado pela tabela seguinte, mas é d
 \begin{table}[H]
 \centering
 \caption{yolo seg model hyp}
-\label{parametroszulp}
+\label{parametrosseg}
 \begin{tabular}{ll}
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
@@ -391,7 +491,7 @@ scale & $[0.5, 1]$ \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model02_mae_boxplot.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
+    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
     \label{fig:model02_mae_boxplot}
 \end{figure}
 
