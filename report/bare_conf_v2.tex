@@ -93,9 +93,11 @@ With object detection, the model is trained based on bounding boxes surrounding 
 
 Building on the concepts presented before on object detection, instance segmentation addresses the problem of identification by incorporating the information of object masks. These are tighter around the object (than bounding boxes), which serve to add a layer to the YOLO algorithm. A global prototype mask (that works with a separate, smaller CNN) is generated for the whole image - this way once the bounding box is determined, mask coefficients are estimated in order to combine the prototype masks into an instance specific mask. This approach avoids per mask full resolution segmentation, keeping the model size small and fast.
 
+
+
 \section{Methodology}
 
-\subsection{Data description (com EDA)}
+\subsection{Dataset \& EDA}
 
 The dataset was provided within the Zindi challenge, consisting of 4419 images (from drone and satellite sources), and per image metadata, consisting of the source (drone or satellite), mask placement, and context of the installation surroundings (e.g., roof, floor, array).\textbf{info do pie chart} The proportion between photovoltaic and thermal solar panels is heavily imbalanced, with 95 \% of the dataset corresponding to photovoltaic panels.
 %o dados, fornecidos pela propria competicao (citar), consistem em 4419 imagens, complementadas por metadata referente à origin da imagem e ao placement dos paineis, providing context on installation environments.
@@ -218,75 +220,72 @@ CLAHE
 HueSaturationValue
 Normalize (dizer q fizemos normalizcao dos pixeis)
 \end{comment}
-% DIZEMOS QUE USAMOS SMP 512X512 ?
-
-
-
-
-\subsection{Results}
-
-....
-
-
-
-
-aaa
-
+% DIZEMOS QUE USAMOS SMP 512X512 ? JP: sim
 
 \section{Models}
 
-llalal
+In the following subsections, A through C, we present the approach and results of the developed models. The hybrid model \textit{zulo40} is presented as benchmark, as it was one of the best performing in the competition and was kindly shared in the discussion forum. The models from in the section \textit{A. Image-based Regression} are based on this model's approach.
 
+The training examples were split between training and validation (80/20) across all the models' training.
 
-\subsection{Hybrid Model aka zulo40}
+\subsection{Image-based Regression}
 
-tendo em conta a metadata da imagem e a propria, foi criada uma familia de modelos que nao tinham em conta a mask.
+This approach had the purpose of incorporating the information from the metadata in the labels with the feature extracted with CNN backbone by transfer learning. In Fig. \ref{fig:nn} we present the schematics for the model's architecture.
+%tendo em conta a metadata da imagem e a propria, foi criada uma familia de modelos que nao tinham em conta a mask.
 
-esta familia de modelos teve como base o codigo? desenvolvimento por um dos utilizadores da competicao e posteriormente adaptado e melhorado por nos
+%esta familia de modelos teve como base o codigo? desenvolvimento por um dos utilizadores da competicao e posteriormente adaptado e melhorado por nos
 % https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25675
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/nn.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{Architecture of the model shared by user zulo40 in the discussion forums. [ref!]}
     \label{fig:nn}
 \end{figure}
 
-a arquitetura? desta familia de modelos pode ser verificada na imagem \ref{fig:nn}, que consite num hybrid model de neural networks, ao usar um bacbone (transfer learning) para extrarir features da imagem (cnn's) e snn? para extrar features da metadata. de seguida, é usado um attention head para juntar todas estas features, da imagem e da metadata, para posteriormente obtermos o resultado da regressao
+After extracting the features they are processed through fully connected layers, where a multi-head attention mechanism is applied after to enhance embeddings. The multi-head attention mechanism is an important technique of CNN from the Transformers architecture, whereby the \textit{attention} (i.e., the importance of certain features) is estimated several times in parallel, allowing to learn different patterns and relationships between different sets of features. Finally a regression head predicts the number of panels (photovoltaic and/or thermal solar) in a given image.
+%a arquitetura? desta familia de modelos pode ser verificada na imagem \ref{fig:nn}, que consite num hybrid model de neural networks, ao usar um bacbone (transfer learning) para extrarir features da imagem (cnn's) e snn? para extrar features da metadata. de seguida, é usado um attention head para juntar todas estas features, da imagem e da metadata, para posteriormente obtermos o resultado da regressao
 
-ademais, como backbone foi exprimentado um densenet121, efficientnetv2B3 e resnet101, através da divisao dos dados em treino e validacao e o uso de data augmentation nos dados de treino.
+The backbones tested were DenseNet121, EfficientNetv2B3 and ResNet101, and after an initial assessment, EfficientNetv2B3 provided with the best results and the hyperparameters were further fine tuned with the ranges specified in Table \ref{parametroszulp}.
 
-ao verificar o melhor desempenho pelo efnet, tanto no treino como validacao como teste, decisiu-se fazer um fine-tunning dos hyperparameters.
+The best set of hyperparameters was selected from a randomized search in a cross validation (CV) set up. Unlike common K-fold CV, due to the long processing times and high computational load, the number of CV repetitions was adjusted 3 times (and not the usual 5 times), and averaged over them. We acknowledge the downside of this approach, particularly the fact that only 66 \% of the data is exposed to validation and the reduced diversity of the models trained. These aspects become particularly evident due to the relatively small size of the dataset.
+
+The criteria for selection of the best model was the MAE (mean absolute error, the metric used in the Zindi challenge), which gave the following hyperparameters marked in bold in Table \ref{parametroszulp}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
+%ademais, como backbone foi exprimentado um densenet121, efficientnetv2B3 e resnet101, através da divisao dos dados em treino e validacao e o uso de data augmentation nos dados de treino.
+
+%ao verificar o melhor desempenho pelo efnet, tanto no treino como validacao como teste, decisiu-se fazer um fine-tunning dos hyperparameters.
+% JP: A questão do split 80/20 mencionei logo no primeiro parágrafo
 
 \begin{table}[H]
 \centering
-\caption{zulo40 type model hyp}
+\caption{Hyperparameter space for the hybrid model \textit{zulo40}. The bold values correspond to the selected hyperparameters.}
 \label{parametroszulp}
 \begin{tabular}{ll}
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size conta? & $\{16, 32, 64\}$ \\
-Optimizer & AdamW \\
-Learning Rate & $[10^{-5}, 10^{-3}]$ \\
-Weight Decay & $[10^{-5}, 10^{-3}]$ \\
-Dropout & $\{0.2, 0.3, 0.4\}$ \\
-Scheduler & CosineAnnealingWarmRestarts \\
-T\_0 & $\{3, 5, 7, 10\}$ \\
-T\_mult & $\{1, 2, 3, 5\}$ \\
-Loss & HuberLoss \\
-$\delta$ & 1 \\
+Batch Size & $\{\mathbf{16}, 32, 64\}$ \\
+Optimizer & \textbf{AdamW} \\
+Learning Rate & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
+Weight Decay & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
+Dropout & $\{0.2, 0.3, \mathbf{0.4}\}$ \\
+Scheduler & \textbf{CosineAnnealingWarmRestarts} \\
+T\_0 & $\{3, \mathbf{5}, 7, 10\}$ \\
+T\_mult & $\{1, \mathbf{2}, 3, 5\}$ \\
+Loss & \textbf{HuberLoss} \\
+$\delta$ & \textbf{1} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 
-na tabela \ref{parametroszulp} pode se verificar o espaco possivel de hyperparametros utilizado, tendo sido a escolha dos melhores baseada numa random search com o uso de cross-validation.
+%na tabela \ref{parametroszulp} pode se verificar o espaco possivel de hyperparametros utilizado, tendo sido a escolha dos melhores baseada numa random search com o uso de cross-validation.
 
-contudo esta cross validation não foi muito tipica devido aos elevados tempos de ajuste dos modelos. os dados de treino foram separados em 5 folds (80/20), mas cada conjunto de hyperparametros so foi ajustado 3 vezes, e não as tipicas 5 vezes.
+%contudo esta cross validation não foi muito tipica devido aos elevados tempos de ajuste dos modelos. os dados de treino foram separados em 5 folds (80/20), mas cada conjunto de hyperparametros so foi ajustado 3 vezes, e não as tipicas 5 vezes.
 
-de modo a escolher o melhor modelo usou-se o validation mae médio como métrica tendo sido o melhor conjunto de hyperparametros dado por 
 
+%de modo a escolher o melhor modelo usou-se o validation mae médio como métrica tendo sido o melhor conjunto de hyperparametros dado por 
+\begin{comment}
 - batch 16
 
 - leraning 1e-4
@@ -300,29 +299,36 @@ de modo a escolher o melhor modelo usou-se o validation mae médio como métrica
 - tmul 2
 
 meta06
+\end{comment}
 
-para alem disso é tbm importante indicar o uso de: 
+%para alem disso é tbm importante indicar o uso de: 
 
-- juntar os modelos (3, pq sao 3 folds) e faz a media das previsoes
+%- juntar os modelos (3, pq sao 3 folds) e faz a media das previsoes
 
-- Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
+Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The scheduler selected (CosineAnnealingWarmRestarts) dynamically changes the learning rate following a cosine schedule, with a defined period (T\_0 = 5), where at each period the learning rate decays to a minimum, restarting at the highest set learning rate. This allows to prevent locking into local minima, by passing through higher learning rates periodically, allowing for fine tuning with lower learning rates for longer periods (given T\_mult = 2, where the period increases two fold at each restart).
 
-- o scheduler altera o learning rate e o paraetro de regularizacao
+The erratic behaviour of the CV loss curve is evident from Fig. \ref{fig:model01_lc}, likely due to the small validation set (20 \% of an already small dataset), which leads to variance spikes due to the changing samples within. The training loss is rather smooth, with periodical increases well in line with the scheduler's algorithm (5, 5 + 10, 15 + 20, ...).
+%- Test-Time Augmentation (TTA), where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). These predictions are later averaged to improve accuracy.
 
-quanto aos resultados deste modelo ...
+%- o scheduler altera o learning rate e o paraetro de regularizacao
+
+%quanto aos resultados deste modelo ...
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model01_lc.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION}
+    \caption{Learning curve for the \textit{zulo40} hydrid model, with Training and Cross-Validation Loss plotted (with standard deviation in shade).}
     \label{fig:model01_lc}
 \end{figure}
 
-a learning curve Fig. \ref{fig:model01_lc}.... é de notar q ela revela picos em certar epochs (porximo da 5, 15, 35) devido ao scheduler aumentar o parametro de regularizacao
+%a learning curve Fig. \ref{fig:model01_lc}.... é de notar q ela revela picos em certar epochs (porximo da 5, 15, 35) devido ao scheduler aumentar o parametro de regularizacao 
+%JP: o scheduler não mexe com o parâmetro de regularização
 
-para alem disso a mesma parou a epoch 66 por early stopping, sendo o criterio de paragem a melhor validation mae (ns se e early stopping pq n tem patience mas sim max de 75 epochs e dps escolher o melhor)
+The training proceeded for 75 epochs, where the best model was selected based on the best validation MAE. From the learning curve, it does not seem to be overfit, but considering the MAE metric and the test set from the Zindi challenge, the test MAE is considerably higher than the training MAE (Table \ref{tab:model01_results}, indicating that the model is not capable of generalizing so well.
 
-no signs of overffiting
+%para alem disso a mesma parou a epoch 66 por early stopping, sendo o criterio de paragem a melhor validation mae (ns se e early stopping pq n tem patience mas sim max de 75 epochs e dps escolher o melhor)
+
+%no signs of overffiting
 
 \begin{table}[H]
 \centering
@@ -338,9 +344,11 @@ Test Set & 0.8434 & 1107 \\
 \end{tabular}
 \end{table}
 
-quanto as metricas de erro presentes na Table \ref{tab:model01_results}, apesar de so termos o MAE parece n haver sinais de overiffing pelas medidas serem semelhantes
+%quanto as metricas de erro presentes na Table \ref{tab:model01_results}, apesar de so termos o MAE parece n haver sinais de overiffing pelas medidas serem semelhantes
+% JP: considerando que o erro no dataset de teste é um bom bocado pior, parece-me estar overfit, já que o modelo não consegue generalizar muito bem
+\subsection{Object Detection}
 
-\subsection{Segmentation Model}
+\subsection{Instance Segmentation}
 
 
 
