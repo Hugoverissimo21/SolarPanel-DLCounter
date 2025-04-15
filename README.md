@@ -22,9 +22,13 @@ challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
 - `EDA01` to `EDA04.ipynb`: files related to the exploratory data analysis and data transformations.
 
+- `enviroment.yml`: dependencies used in the project.
+
 - `Model Hybrid`, `Model ObjectId` and `Model Segmentation.ipynb`: notebooks which contain the best model of each type.
 
 - `Model_Train` and `Model_Val.pkl`: files containing the data used for training and validation, initially (we ended up using kaggle datasets).
+
+- `README.md`: this file.
 
 - `SupvDset.py`: file containing the class used to load the data, initially, and to adjust the polygons.
 
