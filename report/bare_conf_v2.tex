@@ -321,7 +321,7 @@ The erratic behaviour of the CV loss curve is evident from Fig. \ref{fig:model01
 %a learning curve Fig. \ref{fig:model01_lc}.... é de notar q ela revela picos em certar epochs (porximo da 5, 15, 35) devido ao scheduler aumentar o parametro de regularizacao 
 %JP: o scheduler não mexe com o parâmetro de regularização
 
-The training proceeded for 75 epochs, where the best model was selected based on the best validation MAE. From the learning curve, it does not seem to be overfit, but considering the MAE metric and the test set from the Zindi challenge, the test MAE is considerably higher than the training MAE (Table \ref{tab:model01_results}, indicating that the model is not capable of generalizing so well.
+The training proceeded for 75 epochs, where the best model was selected based on the best validation MAE. From the learning curve, it does not seem to be overfit, but considering the MAE metric and the test set from the Zindi challenge, the test MAE is slightly higher than the training MAE (Table \ref{tab:model01_results}, indicating that the model is not capable of generalizing so well. Despite the slight generalization gap, the overfitting chance can be debatable, as we are facing an absolute value metric, which represents a difference of less than half panel per prediction. 
 
 %para alem disso a mesma parou a epoch 66 por early stopping, sendo o criterio de paragem a melhor validation mae (ns se e early stopping pq n tem patience mas sim max de 75 epochs e dps escolher o melhor)
 
