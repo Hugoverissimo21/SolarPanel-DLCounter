@@ -15,7 +15,7 @@
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 \usepackage{placeins}
 \usepackage{comment}
-
+\usepackage{tabularx}
 \ifCLASSINFOpdf
   \usepackage[pdftex]{graphicx}
 \fi
@@ -230,7 +230,7 @@ Test Set & 0.8434 & 1107 \\
 
 \subsection{Object Detection}
 
-Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, we have individually reviewed roughly 300 images \textbf{(confirm number)}, and created individual masks for each panel (either solar thermal or photovoltaic), which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly \textbf{checkar qual o valor}. The remaining individual masks were transformed to bounding box notation (COCO notation style).
+Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, we have individually reviewed roughly 200 images, and created individual masks for each panel (either solar thermal or photovoltaic), which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly 40 \%. The remaining individual masks were transformed to bounding box notation (COCO notation style).
 
 As for the previous section, the criteria for selection of the best model was the MAE, which rendered the following hyperparameters marked in bold in Table \ref{parametrosobjid}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
 
@@ -249,7 +249,7 @@ imgsize & \textbf{512} \\
 augment & \textbf{True} \\
 patience & $[15, \mathbf{25}]$ \\
 cls & $[0.5, \mathbf{1.5}]$ \\
-lr0 & $[\mathbf{20^{-5}}, 10^{-3}]$ \\
+lr0 & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
 lrf & $[0.1, \mathbf{1}]$ \\
 mixup & $[0, \mathbf{0.75}]$ \\
 copy\_paste & $[0, \mathbf{0.75}]$ \\
@@ -267,9 +267,9 @@ From the different model fits, in Fig. \ref{fig:model03_mae_boxplot} the MAE ran
     \label{fig:model03_mae_boxplot}
 \end{figure}
 
-The results from the best model are shared below, where it is important to bear in mind that the metrics shared are for the model's main goal (i.e., object identification), and only after the training it was possible to count apply the model to the test set and count the number of panels of each kind.
+The results from the best model are shared below, although one should bear in mind that the metrics shared are for the model's main goal (i.e., object identification), and only after the training it was possible to count apply the model to the test set and count the number of panels of each kind.
 
-Unlike in the previous section, the cross-validation and training loss curves (Fig. \ref{fig:model03_lc}) do not evidence the spikes seen before (no learning rate scheduler used), but the axis scale might deceive the interpretation: the training loss still has a considerable variance in comparison with the cross-validation loss curve. This still is due to the difficult in generalizing the learning, with such small dataset (and the fact that 40 \% of the data are never in the validation portion of the K-fold CV). Despite this fact, the learning curves progress well and do not evidence overfitting, although the variance of the training curve increases drastically at the very late stages of training.
+Unlike in the previous section, the cross-validation and training loss curves (Fig. \ref{fig:model03_lc}) do not evidence the spikes seen before (no learning rate scheduler used), but the axis scale might deceive the interpretation: the cross-validation loss still has a considerable variance in comparison with the training loss curve. This still is due to the difficult in generalizing the learning, with such small dataset. Despite this fact, the learning curves progress well and do not evidence overfitting, although the variance of the training curve increases drastically at the very late stages of training. One aspect to notice is how the CV loss curve is below the training loss: which might seem strange, but due to the heavy augmentation and the usage of parameters that target class imbalance (copy\_paste = 0.75; mixup = 0.75) the model has a harder time learning the features of the target objects.
 
 \begin{figure}[H]
     \centering
@@ -294,6 +294,8 @@ The evaluation of predictions (i.e., evaluating true/false positive/negative) is
 \[
 \text{IoU} = \frac{\text{Area of } (B_p \cap B_{gt})}{\text{Area of } (B_p \cup B_{gt})}
 \]
+
+The highest F1-score in the range is 0.80 from early confidence of 0.35, with both classes following closely at the top of the F1-score range for most of the confidence interval.
 
 \begin{figure}[H]
     \centering
@@ -341,7 +343,7 @@ augment & \textbf{True} \\
 patience & $[10, \mathbf{25}]$ \\
 cls & $[\mathbf{0.5}, 2.5]$ \\
 lr0 & $[10^{-4}, \mathbf{10^{-3}}]$ \\
-lrf & $[0.01, \mathbf{0.1}, 1]$ \\
+lrf & $\{0.01, \mathbf{0.1}, 1\}$ \\
 mixup & $[\mathbf{0}, 0.5]$ \\
 copy\_paste & $[\mathbf{0}, 0.8]$ \\
 scale & $[\mathbf{0.5}, 1]$ \\
@@ -358,7 +360,7 @@ The MAE of the different folds for the models listed are presented in Fig. \ref{
     \label{fig:model02_mae_boxplot}
 \end{figure}
 
-
+In Fig. \ref{fig:model02_lc} the CV loss curve stabilizes early on, whereas the training loss decreases until around the 80\textsuperscript{th} epoch, after which, one of the folds keeps training but not diminishing the loss significantly. The fact that the CV loss does not change throughout the training is telling of how the model struggled to learn and generalize the features from the dataset. This might well be due to the reduced dataset size (mentioned previously), and the fact that some of the ideal hyperparameters (copy\_paste = 0; mixup = 0) did not promote replication of the minority class. The training of the longest fold stopped at the 92\textsuperscript{nd} epoch due to early stopping.
 
 \begin{figure}[H]
     \centering
@@ -368,18 +370,16 @@ shade).}
     \label{fig:model02_lc}
 \end{figure}
 
+For the F1-Confidence curve (Fig. \ref{fig:model02_yolof1}) all classses attain F1-score of 0.76 at 0.46, which is a lower F1-score and narrower confidence range than the object detection model. The class curves also follow very distinct trends, with the F1-score of the thermal solar panels being considerably worse than that of the photovoltaic panels.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model02_yolof1.png}
-    \caption{CAPTION CAPTION CAPTION CAPTION CAPTION (gerado pelo modulo do yolo automaticamente) referir isso pq ele é "diferente" dos outros ig}
+    \caption{F1-Confidence curves for YOLOv11L-2 (graph automatically generated from the ultralytics package).}
     \label{fig:model02_yolof1}
 \end{figure}
 
-a fig. \ref{fig:model02_yolof1} mostra a metrica f1 relativa a segemntacao do segundo fold do modelo, revelando um melhor desempenho dos photovoltaic em relacao aos thermal, mas sem uma diferenca significativa.
-
-
-
-na fig. \ref{fig:model02_lc} pode-se verificar a learning curve do melhor modelo, a demonstrar a sua convergencia sem sinais de overiffint. apenas com um possivel outlier na loss, que pode ter devido a algum erro de computacao por parte do calculo do segmentation loss por parte do yolo. é possível ver tbm a paragem do modelo após 92 epochs por early stopping.
+The MAE for the train and test set is close between them, with the MAE for the test set being slightly lower (Table \ref{tab:model02_results}. This is well in line with the results presented, being this the model that performed the worst among the group.
 
 \begin{table}[H]
 \centering
@@ -395,41 +395,45 @@ Test Set & 1.3415 & 1107 \\
 \end{tabular}
 \end{table}
 
-quanto as metricas relacionadas com a contagem dos pan e boil, o nosso problema original, o seu resultado é apresentado na tabela \ref{tab:model02_results}
 
-
+\newpage
 \section{Discussion}
 
-https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25674
-
-
-\subsection{Performance Metrics}
-
+In order to have a representative comparison of the three models, each fold of the final model was used to pass the test set through it and the MAE score was collected from the Zindi Challenge website. The result is in Fig. \ref{fig:results_mae_boxplot}, where the Hybrid model clearly shows a lower value of MAE (both on average and range). Both Object Detection and Instance Segmentation show a narrower range of MAE, but worse than the Hybrid model.
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/results_mae_boxplot.png}
-    \caption{CV MAE for each FINE-TUNED model. Each boxplot represents the values obtained THRU THE APPLICATION OF EACH ADJUSTED MODEL (IN EACH TRAINNING FOLDS) TO THE TEST SET}
+    \caption{CV MAE for each fine-tuned model. Each boxplot represents the values obtained from running the test set through each fold of the model, and retrieving the MAE from the Zindi platform.}
     \label{fig:results_mae_boxplot}
 \end{figure}
 
+The worst performance for the YOLO models is likely related with the reduced dataset size, given the need to work with curated labels and masks, whereas the Hybrid model could be fed the whole dataset with the target values for the photovoltaic and thermal solar panel counts per image.
+
+The MAE on test set was also compared to the best and second best models in competition, which is displayed in Table \ref{tab:model02_results_transposed}. The best model in the challenge has documented the approach, and a distinct strategy was deployed, by splitting the dataset between image origin (drone and satellite, to prevent interference in the learning of the distinguishing features of each) and employing ensemble models for each case. These ensembles are weighted, selecting the best model considering the features of the given image. The models used were YOLO, DDQ (Dense Distinct Query), and DINO (DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection). DDQ and DINO are models of the DETR family (DEtection TRansformer) \cite{zindi_lacuna_solar_survey}. The second best model did not share the approach.
+
 \begin{table}[H]
 \centering
-\caption{Error metrics (ONLY MAE) for the FINE-TUNED MODELS, for the train and test set, along with the number of samples for each.}
-\label{tab:model02_results}
-\begin{tabular}{lccccc}
+\caption{Error metric (MAE) for the fine-tuned models, along with the best performers in the competition.}
+\label{tab:model02_results_transposed}
+\begin{tabular}{lr}
 \toprule
-\textbf{Dataset} & \textbf{Hybrid} & \textbf{Obj. Det.} & \textbf{Inst. Seg.} & \textbf{Support} \\
+\textbf{Model} & \textbf{MAE (Test Set)} \\
 \midrule
-Train Set & 0.5127 & 1.4330 & 1.5645 & 3312 \\
-Test Set & 0.8434 & 1.2645 & 1.3415 & 1107 \\
+Hybrid & 0.8434 \\
+Obj. Det. & 1.2645 \\
+Inst. Seg. & 1.3415 \\
+Team Lacuna (1st) & 0.3299 \\
+K\_Junior (2nd) & 0.5698 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 
+
+
 \section{Conclusion}
 
-conc
+The objective of this project was to develop a model capable of counting photovoltaic and solar thermal panels in imagery from drone or satellite origin. Despite the initial challenges with the dataset (poorly labelled images, faulty masks, imbalanced classes), we were able to review the dataset, improve it where possible, and develop reasonable performing models for the task, with the hybrid model performing the best among the group.
 
 
 \section*{Work Load}
