@@ -346,6 +346,8 @@ Test Set & 0.8434 & 1107 \\
 % HV: estamos a falar de falhar 0.3 paineis por imagem, continua a arredondar para o 0, diria q signnigicativo só a partir de valores proximos de 1 ou superiores. a metrica q tens uma indica q em media dizes +- .5 paineis e a outra +- .8, não é algo percentual, é absoluto, dai nao achar significativo
 \subsection{Object Detection}
 
+% INDICAR ALGURES QUE EVENVOLVEU A TRANS DE SEG MASKS PARA BOUNDING BOXES
+
 Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, we have individually reviewed roughly 300 images \textbf{(confirm number)}, and created individual masks for each panel (either solar thermal or photovoltaic), which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly \textbf{checkar qual o valor}.
 \begin{comment}
 \textbf{isto tbm é do yolo de obj seg, ns onde se meta:} ideia inicial era fazer segmentacao de conjuntos de paineis e de boilers e posteriormente com outro modelo fazer contagem. problema foi q o modelo ao reconhecer paineis invidivudais, mesmo em conjuntos identificava individuais, levando ao mau desempenho do modelo
@@ -571,13 +573,32 @@ Test Set & 1.3415 & 1107 \\
 quanto as metricas relacionadas com a contagem dos pan e boil, o nosso problema original, o seu resultado é apresentado na tabela \ref{tab:model02_results}
 
 
-\section{Discussion} 
+\section{Discussion}
 
 https://zindi.africa/competitions/lacuna-solar-survey-challenge/discussions/25674
 
 \subsection{Performance Metrics}
 
-discussao
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/results_mae_boxplot.png}
+    \caption{CV MAE for each FINE-TUNED model. Each boxplot represents the values obtained THRU THE APPLICATION OF EACH ADJUSTED MODEL (IN EACH TRAINNING FOLDS) TO THE TEST SET}
+    \label{fig:results_mae_boxplot}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Error metrics (ONLY MAE) for the FINE-TUNED MODELS, for the train and test set, along with the number of samples for each.}
+\label{tab:model02_results}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Dataset} & \textbf{Obj. Det.} & \textbf{Inst. Seg.} & \textbf{Hybrid} & \textbf{Support} \\
+\midrule
+Train Set & 1.4330 & 1.5645 & 0.5127 & 3312 \\
+Test Set & 1.2645 & 1.3415 & 0.8434 & 1107 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 \section{Conclusion}
