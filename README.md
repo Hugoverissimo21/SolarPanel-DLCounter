@@ -1,24 +1,33 @@
-# Lacuna-solar
-
-## CAA01
+# Lacuna Solar Survey Challenge
 
 challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
-## data
+- Hugo Veríssimo
 
-### tratamento e limpeza e validacao dos dados
+- João Cardoso
 
-- train_v01: tratamento dos dados: multiplas linhas para uma
-- train_v02: pegar no v01, adicionar coluna de validacao dos poligonos
-- train_v03: copia do v02, sem ligacao direta aos notebooks (backup)
+## Files Description
 
-### dados para teste e treino:
+- `ModelArchive/`: contains all the models trained.
 
-- Model_Train.pkl
-- Model_Val.pkl
+- `ModelBuild/`: contains the files related to the adjusted models and metrics.
 
-e usar SupvDset.py como modulo com a classe para carregar os dados
+- `Zindi/`: contains the files related to the challenge.
 
+- `assets/`: contains all the visualization related to results and data.
 
+- `images/`: where the images were stored, given by the challenge.
 
-ModelArchive tem TODOS os modelos, mas ha copias dos modelos na pagina principal, apenas para terem um maior destaque
+- `report/`: contains the report of the whole project.
+
+- `EDA01` to `EDA04.ipynb`: files related to the exploratory data analysis and data transformations.
+
+- `Model Hybrid`, `Model ObjectId` and `Model Segmentation.ipynb`: notebooks which contain the best model of each type.
+
+- `Model_Train` and `Model_Val.pkl`: files containing the data used for training and validation, initially (we ended up using kaggle datasets).
+
+- `SupvDset.py`: file containing the class used to load the data, initially, and to adjust the polygons.
+
+- `Test` and `Train.csv`: test and train dataframes, with all the data, given by the challenge.
+
+- `Zindi.png`: not our best moment...
