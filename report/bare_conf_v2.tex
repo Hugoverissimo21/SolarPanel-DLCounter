@@ -43,13 +43,15 @@ joaopcardoso@ua.pt}}
 \thispagestyle{plain}
 
 \begin{abstract}
-abstact
+%PERFORMANCE NO Q??? Using a curated dataset from the Lacuna Solar Survey Challenge, the performance of different models are explored, including object detection and image-based regression architectures. Despite challenges such as class imbalance and inconsistent annotations, the hybrid regression model achieved the best performance. The results highlight the impact of data quality and model selection in remote sensing applications for energy infrastructure assessment. (from GPT, don't use)
+This project addresses the detection and counting of photovoltaic and thermal solar panels in aerial imagery, developed for the Lacuna Solar Survey Challenge on Zindi. The dataset presented issues such as inconsistent masks and a strong class imbalance. After manual refinement, multiple models were evaluated. The best results were achieved using a hybrid approach that combines image feature extraction with metadata-based estimation, leading to the lowest MAE among tested configurations.
 \end{abstract}
-Access to electricity and warm water has been a basic necessity for a long time in the developed world. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar photovoltaic and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making.
+
 \begin{quote}
 \small
 \noindent
-\textbf{Keywords:} R, Object Detection
+\textbf{Keywords:} solar panel detection, aerial imagery, deep learning, Zindi challenge, image feature extraction, object detection, instance segmentation
+%R, Object Detection, METER MAIS !?!?!
 \end{quote}
 
 \IEEEpeerreviewmaketitle
@@ -57,7 +59,7 @@ Access to electricity and warm water has been a basic necessity for a long time 
 
 \section{Introduction}
 
-Access to electricity and warm water has been a basic necessity for a long time in the developed world. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar photovoltaic and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created by the Lacuna Fund and associate entities in the Zindi platform to develop a machine learning model capable of accurately detecting and counting the number of solar thermal (solar from here on) and photovoltaic panels in drone and satellite imagery.
+Access to electricity and warm water has been a basic necessity for a long time in the developed world. In developing countries, the lack of a centralized distribution system makes this access harder for everyone. To improve on this gap, it is essential for governments, non-governmental organizations, and energy suppliers to understand how solar photovoltaic and solar thermal panels (for electricity and water heating, respectively) are distributed throughout the territory to ensure proper planning and effective policy making. In this context, a challenge was created by the Lacuna Fund and associate entities in the Zindi platform to develop a machine learning model capable of accurately counting the number of solar thermal and photovoltaic panels in drone and satellite imagery.
 
 In the present work, we have developed different approaches to the problem at hand, where we need to count the two types of panels separately: taking a regression type approach, where images are analysed as a whole and the target number of panels are provided per image; by identifying the panels through object detection and counting them afterwards; and by applying segmentation models to identify the regions of interest, analysing them and counting the panels. The different approaches were developed so that a single model for each type would be able to tackle the task of identifying and counting the different panels.
 
@@ -71,7 +73,7 @@ The \textit{DeepSolar} model consists allowed to create a nearly complete contig
 
 Different models have been proposed for panel detection through image segmentation, using Mask R-CNN \cite{maskrcnn} , TernausNet, based on U-Net \cite{KAUSIKA2021100111}, MobileNet with U-Net backbone \cite{wani2021segmentation}, with different approaches to data preparation and application. These models consistently score higher than 90 \% in terms of precision, at the cost of higher computation times compared to the examples previously mentioned (also for very different task sizes). A couple notable aspects across publications: the size of datasets (often in the tens of thousands of images), with strong strategies for collecting and/or preprocessing, ensuring that the models have the best possible starting point to learn and develop; and the focus on a specific type of panel or problem topic, not trying to solve multiple problems with a single tool.
 
-For the purpose of this work, we have developed three approaches to the problem, to assess their strengths and merits, which will be detailed in the next subsections.
+For the purpose of this work, three approaches to the problem were developed to assess their strengths and merits, which will be detailed in the following subsections.
 
 \subsection{Image-based Regression}
 
@@ -81,7 +83,7 @@ ResNet (Residual Networks) was introduced in 2015 by Microsoft, and is notorious
 
 DenseNet follows on the footsteps of ResNet, and was introduced in 2016 by Huang \textit{et al.}, whereby the idea of skipping connections is taken further, and every layer prior to a given layer is connected to it \cite{DenseNet}. This avoids the chain multiplication problem (which leads to vanishing gradients), while reusing previously learned features, retaining relevant information throughout the deepness of the CNN. This architecture also has the benefit of using less parameters than CNN in general (and ResNet as well).
 
-EfficientNet (EffNet), the most recent of this group was introduced by Google AI in 2019, and departs from the direct implementation of the aforementioned methods, dealing with vanishing gradients given its intrinsic architecture \cite{EffienctNet}. By having MB Conv (Mobile Inverted Bottleneck Convolution) as its building block, it allows to extract spatial features by expanding the number of channels to perform depthwise convolution and applying separate filters per channels \textbf{(verificar a nomenclatura)}, that is then compressed to the original size of the input. Whilst this happens, the mechanism of squeeze-and-excitation determines the importance of said features, further addressing the vanishing gradient problem. This architecture is then scaled via compound scaling (rather than arbitrarily), whereby the size of the CNN (depth x width and input resolution) is scaled in a balanced manner, with the compound coefficient $\phi$ being adjusted by grid search.
+EfficientNet (EffNet), the most recent of this group was introduced by Google AI in 2019, and departs from the direct implementation of the aforementioned methods, dealing with vanishing gradients given its intrinsic architecture \cite{EffienctNet}. By having MBConv (Mobile Inverted Bottleneck Convolution) as its building block, it allows to extract spatial features by expanding the number of channels to perform depthwise convolution and applying separate filters per channel, that is then compressed to the original size of the input. Whilst this happens, the mechanism of squeeze-and-excitation determines the importance of said features, further addressing the vanishing gradient problem. This architecture is then scaled via compound scaling (rather than arbitrarily), whereby the size of the CNN (depth $\times$ width and input resolution) is scaled in a balanced manner, with the compound coefficient $\phi$ being adjusted by grid search.
 
 \subsection{Object Detection}
 
@@ -97,9 +99,9 @@ Building on the concepts presented before on object detection, instance segmenta
 
 \subsection{Dataset \& EDA}
 
-The dataset was provided within the Zindi challenge, consisting of 4419 images (from drone and satellite sources), and per image metadata, consisting of the source (drone or satellite), mask placement, and context of the installation surroundings (e.g., roof, floor, array).\textbf{info do pie chart} The proportion between photovoltaic and thermal solar panels is heavily imbalanced, with 95 \% of the dataset corresponding to photovoltaic panels \cite{zindi2025lacuna}.
+The dataset was provided within the Zindi challenge \cite{zindi2025lacuna}, consisting of 4419 images, and per image metadata, consisting of the source (drone or satellite), mask placement, and context of the installation surroundings (e.g., roof, floor, array).
 
-Of all the images, 3312 (75 \%) have detailed information on the masks (location, number of panels within, if they are photovoltaic or thermal). The remaining 1107 (25 \%) do not have this information, only the number of photovoltaic and thermal panels in the image. Hence, per design of the competition the train/test split is 75/25.
+Of all the images, 3312 (75 \%) have detailed information on the masks (location, number of panels within, if they are photovoltaic or thermal). The remaining 1107 (25 \%) do not have this information, only the metadata related to the image. Hence, per design of the competition the train/test split is 75/25.
 
 \begin{figure}[H]
     \centering
@@ -117,9 +119,9 @@ Of all the images, 3312 (75 \%) have detailed information on the masks (location
 
 In Fig. \ref{fig:data_placement_classes} the image origin and placement are displayed, which according to the challenge information were labelled by expert personnel. Where the placement class wasn't conclusive, the images are labelled as "S-unknown" (the remaining examples are self explanatory). Besides the two classes to be identified, the context and origin of the images means a considerable number of combinations for the model to learn, where some of these combinations might (and certainly are), under-represented given the relatively small dataset.
 
-The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in Fig. \ref{fig:data_objectdistribution}.
+The masks are not consistent throughout the dataset, with varying number of panels within them (some contain a single panel, others might contain a complete array of up to 200), which can be clearly seen in Fig. \ref{fig:data_objectdistribution}. In addition to this inconsistency, there is also a strong imbalance between photovoltaic and solar thermal panels, with approximately 95\% of the dataset corresponding to photovoltaic panels.
 
-From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed below.
+From the sample images below, the difference in the quality of the masks is stark. Several images were found to have misaligned vertices of the masks, and several masks had a large amount of panels (as seen from the distribution aforementioned). In principle, with the reference of the number of panels within each mask, it might have a small impact for some types of models, but the same model is in fact learning features for different representations: rather than for the representation of individual panels. This was an evident obstacle to the implementation of YOLO type models, which was dealt with, and further detailed in the following sections.
 
 \begin{figure}[H]
     \centering
@@ -151,13 +153,13 @@ From the sample images below, the difference in the quality of the masks is star
 
 \subsection{Preprocessing}
 
-The discussion forum for the competition was a fruitful source of information on the dataset and how to address it. As seen above, the incorrectly defined masks, and the masks with several panels represented hindrances to achieve the best possible performance. Besides that, some of the masks were shifted from the actual position of the panels, which considering that all were identically shifted, seemed deliberate from the competition. By manually analysing every image  it was possible to detect such images (with wrongly drawn masks and shifted), and correct them. Upon completing the dataset revision, 263 of the training samples were lost due to poorly drawn masks (the remaining images that had misaligned masks were corrected).
+The discussion forum for the competition was a fruitful source of information on the dataset and how to address it. As seen before, the incorrectly defined masks, and the masks with several panels represented hindrances to achieve the best possible performance. Besides that, some of the masks were shifted from the actual position of the panels, which considering that all were identically shifted, seemed deliberate from the competition. By manually analysing every image  it was possible to detect such images (with wrongly drawn masks and shifted), and correct them. Upon completing the dataset revision, 263 of the training samples were lost due to poorly drawn masks (the remaining images that had misaligned masks were corrected).
 
 Once the dataset was ready, the (online) data augmentation process was devised in order to increase the number of training and diversify it, in order to enhance the generalizability of the trained models. The transformations HorizontalFlip, VerticalFlip, RandomRotate90, GaussianBlur, CLAHE (Contrast Limited Adaptive Histogram Equalization), HueSaturationValue and Normalize were applied before all training cycles. The images were all resized to 512x512, to lower the computational burden and homogeneize the code throughout the pipeline. 
 
 \section{Models}
 
-In the following subsections, A through C, we present the approach and results of the developed models. The hybrid model \textit{zulo40} is used as benchmark, as it was one of the best performing in the competition and was kindly shared in the discussion forum. The models from in the section \textit{A. Image-based Regression} are based on this model's approach. The models in \textit{A. Image-based Regression} were selected from PyTorch (torchvision) package, and the ones from \textit{B. Object Detection} and \textit{C. Instance Segmentation} are from ultralytics package.
+In the following subsections, A through C, the approach and results of the developed models are presented. The hybrid model \textit{zulo40} is used as benchmark, as it was one of the best performing in the competition and was kindly shared in the discussion forum. The models from in the section \textit{A. Image-based Regression} are based on this model's approach. The models in \textit{A. Image-based Regression} were selected from PyTorch (\texttt{torchvision}) package, and the ones from \textit{B. Object Detection} and \textit{C. Instance Segmentation} are from \texttt{ultralytics} package.
 %verificar formatação do texto a mencionar os packages, e usar igual
 
 The training examples were split between training and validation (80/20) across all the models' training. The best set of hyperparameters was selected from a randomized search in a cross validation (CV) set up. Unlike what is commonly done with K-fold CV, due to the long processing times and high computational load, the number of CV repetitions was adjusted 3 times (and not the usual 5 times), and averaged over them. We acknowledge the downside of this approach, particularly the fact that only 60 \% of the data is exposed to validation and the reduced diversity of the models trained. These aspects become particularly evident due to the relatively small size of the dataset.
@@ -169,11 +171,11 @@ This approach had the purpose of incorporating the information from the metadata
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/nn.png}
-    \caption{Architecture of the model shared by user zulo40 in the discussion forums. [ref!]}
+    \caption{Architecture of the model shared by user zulo40 in the discussion forums. \cite{zulo4thewin}}
     \label{fig:nn}
 \end{figure}
 
-After extracting the features they are processed through fully connected layers, where a multi-head attention mechanism is applied after to enhance embeddings. The multi-head attention mechanism is an important technique of CNN from the Transformers architecture, whereby the \textit{attention} (i.e., the importance of certain features) is estimated several times in parallel, allowing to learn different patterns and relationships between different sets of features. Finally a regression head predicts the number of panels (photovoltaic and/or thermal solar) in a given image.
+After extracting the features they are processed through fully connected layers, where a multi-head attention mechanism is applied after to enhance embeddings. The multi-head attention mechanism is an important technique of CNN from the Transformers architecture, whereby the \textit{attention} (i.e., the importance of certain features) is estimated several times in parallel, allowing to learn different patterns and relationships between different sets of features. Finally a regression head predicts the number of panels (photovoltaic and thermal solar) in a given image.
 
 The backbones tested were DenseNet121, EfficientNetv2B3 and ResNet101, and after an initial assessment, EfficientNetv2B3 provided with the best results and the hyperparameters were further fine tuned with the ranges specified in Table \ref{parametroszulp}.
 
@@ -187,10 +189,10 @@ The criteria for selection of the best model was the MAE (mean absolute error, t
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size & $\{\mathbf{16}, 32, 64\}$ \\
+Batch size & $\{\mathbf{16}, 32, 64\}$ \\
 Optimizer & \textbf{AdamW} \\
-Learning Rate & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
-Weight Decay & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
+Learning rate & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
+Weight decay & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
 Dropout & $\{0.2, 0.3, \mathbf{0.4}\}$ \\
 Scheduler & \textbf{CosineAnnealingWarmRestarts} \\
 T\_0 & $\{3, \mathbf{5}, 7, 10\}$ \\
@@ -201,7 +203,7 @@ $\delta$ & \textbf{1} \\
 \end{tabular}
 \end{table}
 
-Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The scheduler selected (CosineAnnealingWarmRestarts) dynamically changes the learning rate following a cosine schedule, with a defined period (T\_0 = 5), where at each period the learning rate decays to a minimum, restarting at the highest set learning rate. This allows to prevent locking into local minima, by passing through higher learning rates periodically, allowing for fine tuning with lower learning rates for longer periods (given T\_mult = 2, where the period increases two fold at each restart).
+Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The selected scheduler (CosineAnnealingWarmRestarts) dynamically adjusts both the learning rate and regularization (via weight decay) following a cosine schedule. Starting from a maximum value, the learning rate gradually decreases to a defined minimum over a period (T\_0 = 5), then restarts at the maximum. This cyclical behavior prevents the model from getting trapped in local minima by periodically increasing the learning rate, while longer periods (with T\_mult = 2) allow for finer adjustments over time. The synchronized modulation of regularization further supports generalization throughout training.
 
 The erratic behaviour of the CV loss curve is evident from Fig. \ref{fig:model01_lc}, likely due to the small validation set (20 \% of an already small dataset), which leads to variance spikes due to the changing samples within. The training loss is rather smooth, with periodical increases well in line with the scheduler's algorithm (5, 5 + 10, 15 + 20, ...).
 
@@ -230,9 +232,9 @@ Test Set & 0.8434 & 1107 \\
 
 \subsection{Object Detection}
 
-Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, we have individually reviewed roughly 200 images, and created individual masks for each panel (either solar thermal or photovoltaic), which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly 40 \%. The remaining individual masks were transformed to bounding box notation (COCO notation style).
+Upon initial testing of YOLO models in the dataset, it was clear from the beginning that the labelling style was a major hindrance to the type of models resorting to the masks/labels, which resulted in significant loss in performance. Based on this assessment, an individual review of roughly 200 images was conducted and individual masks for each panel (either solar thermal or photovoltaic) were created, which resulted in roughly 1000 individual masks (mostly for photovoltaic). To train these models, only images with individual masks were considered, resulting in a reduction in size of the dataset of roughly 40 \%. The remaining individual masks were transformed to bounding box notation (COCO notation style).
 
-As for the previous section, the criteria for selection of the best model was the MAE, which rendered the following hyperparameters marked in bold in Table \ref{parametrosobjid}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
+As for the previous section, the criteria for selecting the best model was the MAE. A small number of hyperparameter combinations was tested, due to the time-consuming nature of training. The possible values considered for each hyperparameter are listed in Table \ref{parametrosobjid}.
 
 % ORGANIZAR TABELA
 \begin{table}[H]
@@ -243,11 +245,11 @@ As for the previous section, the criteria for selection of the best model was th
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size & $\{16, \mathbf{32}\}$ \\
-yolo & \{yolo11l, yolo11m, \textbf{yolov8l}\} \\
-imgsize & \textbf{512} \\
-augment & \textbf{True} \\
-patience & $[15, \mathbf{25}]$ \\
+Batch size & $\{16, \mathbf{32}\}$ \\
+Model & \{\textbf{yolov8l}, yolo11m, yolo11l\} \\
+Image size & \textbf{512} \\
+Augmentation & \textbf{True} \\
+Early stopping patience & $[15, \mathbf{25}]$ \\
 cls & $[0.5, \mathbf{1.5}]$ \\
 lr0 & $[\mathbf{10^{-5}}, 10^{-3}]$ \\
 lrf & $[0.1, \mathbf{1}]$ \\
@@ -258,7 +260,7 @@ scale & $[0.5, \mathbf{1}]$ \\
 \end{tabular}
 \end{table}
 
-From the different model fits, in Fig. \ref{fig:model03_mae_boxplot} the MAE ranges are displayed with boxplots, where the model YOLOv8L has been fit three different times for different combinations of hyperparameters, evidencing the relevance of this step. From the group, the model with lowest mean MAE was selected (the hyperparameters selected are in bold in Table \ref{parametrosobjid}).
+From the different model fits, Fig. \ref{fig:model03_mae_boxplot} displays the MAE ranges using boxplots. The YOLOv8L model, for instance, was trained three times with distinct hyperparameter sets, highlighting the importance of tuning. The model with the lowest mean MAE was selected (YOLOv8L-3), and its corresponding hyperparameters are marked in bold in Table \ref{parametrosobjid}.
 
 \begin{figure}[H]
     \centering
@@ -304,7 +306,7 @@ The highest F1-score in the range is 0.80 from early confidence of 0.35, with bo
     \label{fig:model03_yolof1}
 \end{figure}
 
-Despite our efforts to attain a better model, the MAE of the train and test set was among the worst evaluated, especially when considering how low the CV training MAE was.
+Despite efforts to achieve a better model, the MAE of the train and test set was among the worst evaluated, especially when considering how low the MAE for CV training was.
 
 \begin{table}[H]
 \centering
@@ -336,11 +338,11 @@ bold values correspond to the selected hyperparameters. The remaining parameters
 \toprule
 \textbf{Hyperparameter} & \textbf{Possible Values} \\
 \midrule
-Batch Size & $\{\mathbf{8}, 32, 16\}$ \\
-yolo & \{\textbf{yolo11l-seg}, yolo11m-seg, yolov8l-seg\} \\
-imgsize & \textbf{512} \\
-augment & \textbf{True} \\
-patience & $[10, \mathbf{25}]$ \\
+Batch size & $\{\mathbf{8}, 32, 16\}$ \\
+Model & \{yolov8l-seg, yolo11m-seg, \textbf{yolo11l-seg}\} \\
+Image size & \textbf{512} \\
+Augmentation & \textbf{True} \\
+Early stopping patience & $[10, \mathbf{25}]$ \\
 cls & $[\mathbf{0.5}, 2.5]$ \\
 lr0 & $[10^{-4}, \mathbf{10^{-3}}]$ \\
 lrf & $\{0.01, \mathbf{0.1}, 1\}$ \\
@@ -379,7 +381,7 @@ For the F1-Confidence curve (Fig. \ref{fig:model02_yolof1}) all classses attain 
     \label{fig:model02_yolof1}
 \end{figure}
 
-The MAE for the train and test set is close between them, with the MAE for the test set being slightly lower (Table \ref{tab:model02_results}. This is well in line with the results presented, being this the model that performed the worst among the group.
+The MAE for the train and test set is close between them, with the MAE for the test set being slightly lower (Table \ref{tab:model02_results}). This is well in line with the results presented, being this the model that performed the worst among the group.
 
 \begin{table}[H]
 \centering
@@ -409,7 +411,7 @@ In order to have a representative comparison of the three models, each fold of t
 
 The worst performance for the YOLO models is likely related with the reduced dataset size, given the need to work with curated labels and masks, whereas the Hybrid model could be fed the whole dataset with the target values for the photovoltaic and thermal solar panel counts per image.
 
-The MAE on test set was also compared to the best and second best models in competition, which is displayed in Table \ref{tab:model02_results_transposed}. The best model in the challenge has documented the approach, and a distinct strategy was deployed, by splitting the dataset between image origin (drone and satellite, to prevent interference in the learning of the distinguishing features of each) and employing ensemble models for each case. These ensembles are weighted, selecting the best model considering the features of the given image. The models used were YOLO, DDQ (Dense Distinct Query), and DINO (DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection). DDQ and DINO are models of the DETR family (DEtection TRansformer) \cite{zindi_lacuna_solar_survey}. The second best model did not share the approach.
+The MAE on test set was also compared to the best and second best models in competition, which is displayed in Table \ref{tab:model02_results_transposed}. The best model in the challenge has documented the approach, and a distinct strategy was deployed, by splitting the dataset between image origin (drone and satellite, to prevent interference in the learning of the distinguishing features of each) and employing ensemble models for each case. These ensembles are weighted, selecting the best model considering the features of the given image. The models used were YOLO, DDQ (Dense Distinct Query), and DINO (DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection). DDQ and DINO are models of the DETR family (DEtection TRansformer) \cite{zindi_lacuna_solar_survey}. The approach used by the second best model remains unknown.
 
 \begin{table}[H]
 \centering
@@ -433,7 +435,7 @@ K\_Junior (2nd) & 0.5698 \\
 
 \section{Conclusion}
 
-The objective of this project was to develop a model capable of counting photovoltaic and solar thermal panels in imagery from drone or satellite origin. Despite the initial challenges with the dataset (poorly labelled images, faulty masks, imbalanced classes), we were able to review the dataset, improve it where possible, and develop reasonable performing models for the task, with the hybrid model performing the best among the group.
+The objective of this project was to develop a model capable of counting photovoltaic and solar thermal panels in imagery from drone or satellite sources. Despite initial challenges with the dataset, such as poorly labelled images, faulty masks, and imbalanced classes, the dataset was reviewed and improved where possible, leading to the development of reasonably well-performing models for the task, with the hybrid model achieving the best performance among the evaluated models.
 
 
 \section*{Work Load}
