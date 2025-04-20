@@ -43,15 +43,16 @@ joaopcardoso@ua.pt}}
 \thispagestyle{plain}
 
 \begin{abstract}
+This project was developed with the Lacuna Solar Survey Challenge in mind, to develop a model capable of identifying photovoltaic and thermal solar panels from aerial imagery (satellite or drone). The challenge is of public interest, to learn about solar panel usage, and support in planning infrastructure in Madagascar. The dataset was curated for inconsistencies and label improvement. Three types of models were developed: image-based regression, object detection, and instance segmentation, where the former was the best performing model. The benchmark revealed that there was still a margin for progression, that would require finer curation of the dataset and computational power.
 %PERFORMANCE NO Q??? Using a curated dataset from the Lacuna Solar Survey Challenge, the performance of different models are explored, including object detection and image-based regression architectures. Despite challenges such as class imbalance and inconsistent annotations, the hybrid regression model achieved the best performance. The results highlight the impact of data quality and model selection in remote sensing applications for energy infrastructure assessment. (from GPT, don't use)
-This project addresses the detection and counting of photovoltaic and thermal solar panels in aerial imagery, developed for the Lacuna Solar Survey Challenge on Zindi. The dataset presented issues such as inconsistent masks and a strong class imbalance. After manual refinement, multiple models were evaluated. The best results were achieved using a hybrid approach that combines image feature extraction with metadata-based estimation, leading to the lowest MAE among tested configurations.
+%This project addresses the detection and counting of photovoltaic and thermal solar panels in aerial imagery, developed for the Lacuna Solar Survey Challenge on Zindi. The dataset presented issues such as inconsistent masks and a strong class imbalance. After manual refinement, multiple models were evaluated. The best results were achieved using a hybrid approach that combines image feature extraction with metadata-based estimation, leading to the lowest MAE among tested configurations.
 \end{abstract}
 
 \begin{quote}
 \small
 \noindent
-\textbf{Keywords:} solar panel detection, aerial imagery, deep learning, Zindi challenge, image feature extraction, object detection, instance segmentation
-%R, Object Detection, METER MAIS !?!?!
+\textbf{Keywords:} solar panel detection, deep learning, image feature extraction, object detection, instance segmentation
+%Zindi challenge, aerial imagery,
 \end{quote}
 
 \IEEEpeerreviewmaketitle
@@ -130,7 +131,7 @@ From the sample images below, the difference in the quality of the masks is star
     \label{fig:data_objectdistribution}
 \end{figure}
 
-
+% REVER HUGO: legenda da figura está incorrecta (usar igual ao que está na Fig. 3)
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{\linewidth}
@@ -155,12 +156,13 @@ From the sample images below, the difference in the quality of the masks is star
 
 The discussion forum for the competition was a fruitful source of information on the dataset and how to address it. As seen before, the incorrectly defined masks, and the masks with several panels represented hindrances to achieve the best possible performance. Besides that, some of the masks were shifted from the actual position of the panels, which considering that all were identically shifted, seemed deliberate from the competition. By manually analysing every image  it was possible to detect such images (with wrongly drawn masks and shifted), and correct them. Upon completing the dataset revision, 263 of the training samples were lost due to poorly drawn masks (the remaining images that had misaligned masks were corrected).
 
-Once the dataset was ready, the (online) data augmentation process was devised in order to increase the number of training and diversify it, in order to enhance the generalizability of the trained models. The transformations HorizontalFlip, VerticalFlip, RandomRotate90, GaussianBlur, CLAHE (Contrast Limited Adaptive Histogram Equalization), HueSaturationValue and Normalize were applied before all training cycles. The images were all resized to 512x512, to lower the computational burden and homogeneize the code throughout the pipeline. 
+Once the dataset was ready, the (online) data augmentation process was devised in order to increase the number of training and diversify it, in order to enhance the generalizability of the trained models. The transformations HorizontalFlip, VerticalFlip, RandomRotate90, GaussianBlur, CLAHE (Contrast Limited Adaptive Histogram Equalization), HueSaturationValue and Normalize were applied before all training cycles. The images were all resized to 512x512, to lower the computational burden and homogenize the code throughout the pipeline. 
 
 \section{Models}
 
-In the following subsections, A through C, the approach and results of the developed models are presented. The hybrid model \textit{zulo40} is used as benchmark, as it was one of the best performing in the competition and was kindly shared in the discussion forum. The models from in the section \textit{A. Image-based Regression} are based on this model's approach. The models in \textit{A. Image-based Regression} were selected from PyTorch (\texttt{torchvision}) package, and the ones from \textit{B. Object Detection} and \textit{C. Instance Segmentation} are from \texttt{ultralytics} package.
+In the following subsections, A through C, the approach and results of the developed models are presented. The hybrid model \textit{zulo40} is used as a benchmark, as it was one of the best-performing in the competition and was kindly shared in the discussion forum. The models in subsection \textit{A. Image-based Regression} are based on this model's approach. The models in \textit{A. Image-based Regression} were selected from PyTorch (\texttt{torchvision}) package, and the ones from \textit{B. Object Detection} and \textit{C. Instance Segmentation} are from \texttt{ultralytics} package.
 %verificar formatação do texto a mencionar os packages, e usar igual
+% JP: Pequenas correções de palavras
 
 The training examples were split between training and validation (80/20) across all the models' training. The best set of hyperparameters was selected from a randomized search in a cross validation (CV) set up. Unlike what is commonly done with K-fold CV, due to the long processing times and high computational load, the number of CV repetitions was adjusted 3 times (and not the usual 5 times), and averaged over them. We acknowledge the downside of this approach, particularly the fact that only 60 \% of the data is exposed to validation and the reduced diversity of the models trained. These aspects become particularly evident due to the relatively small size of the dataset.
 
@@ -181,7 +183,7 @@ The backbones tested were DenseNet121, EfficientNetv2B3 and ResNet101, and after
 
 The criteria for selection of the best model was the MAE (mean absolute error, the metric used in the Zindi challenge), which gave the following hyperparameters marked in bold in Table \ref{parametroszulp}. The hyperparameters were selected for a small number of combinations, given how time consuming training each model is.
 
-\begin{table}[H]
+\begin{table}[b]
 \centering
 \caption{Hyperparameter space for the models based of the hybrid model \textit{zulo40}. The bold values correspond to the selected hyperparameters.}
 \label{parametroszulp}
@@ -202,6 +204,7 @@ $\delta$ & \textbf{1} \\
 \bottomrule
 \end{tabular}
 \end{table}
+\newpage
 
 Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The selected scheduler (CosineAnnealingWarmRestarts) dynamically adjusts both the learning rate and regularization (via weight decay) following a cosine schedule. Starting from a maximum value, the learning rate gradually decreases to a defined minimum over a period (T\_0 = 5), then restarts at the maximum. This cyclical behavior prevents the model from getting trapped in local minima by periodically increasing the learning rate, while longer periods (with T\_mult = 2) allow for finer adjustments over time. The synchronized modulation of regularization further supports generalization throughout training.
 
@@ -273,6 +276,12 @@ The results from the best model are shared below, although one should bear in mi
 
 Unlike in the previous section, the cross-validation and training loss curves (Fig. \ref{fig:model03_lc}) do not evidence the spikes seen before (no learning rate scheduler used), but the axis scale might deceive the interpretation: the cross-validation loss still has a considerable variance in comparison with the training loss curve. This still is due to the difficult in generalizing the learning, with such small dataset. Despite this fact, the learning curves progress well and do not evidence overfitting, although the variance of the training curve increases drastically at the very late stages of training. One aspect to notice is how the CV loss curve is below the training loss: which might seem strange, but due to the heavy augmentation and the usage of parameters that target class imbalance (copy\_paste = 0.75; mixup = 0.75) the model has a harder time learning the features of the target objects.
 
+The resulting F1-Confidence curve (Fig. \ref{fig:model03_yolof1}) is a typical analysis for this type of models, as it relates two important metrics: F1-score, which is a result of the precision and recall of the predicted samples; and confidence, which consists of the product of the probability of a given object existing within the bounding box, and the probability of a given class given that object is in the box. The equation for confidence is available below.
+
+\[
+\text{Confidence} = P(\text{object}) \times P(\text{class} \mid \text{object})
+\]
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model03_lc.png}
@@ -283,11 +292,9 @@ deviation in shade).}
 \end{figure}
 
 %\textbf{não nos podemos esquecer de referenciar o código usado)}
-The resulting F1-Confidence curve (Fig. \ref{fig:model03_yolof1}) is a typical analysis for this type of models, as it relates two important metrics: F1-score, which is a result of the precision and recall of the predicted samples; and confidence, which consists of the product of the probability of a given object existing within the bounding box, and the probability of a given class given that object is in the box. The equation for confidence is available below.
 
-\[
-\text{Confidence} = P(\text{object}) \times P(\text{class} \mid \text{object})
-\]
+
+
 
 Moreover, confidence is a result of the training process, where during each image pass through the CNN the probabilities for a objectness (i.e., presence of object) and class are learned from training. This output serves as the final layer's activation, shaped by the training, which will reflect the training and be used during inference stage to assess detection certainty.
 
@@ -372,7 +379,7 @@ shade).}
     \label{fig:model02_lc}
 \end{figure}
 
-For the F1-Confidence curve (Fig. \ref{fig:model02_yolof1}) all classses attain F1-score of 0.76 at 0.46, which is a lower F1-score and narrower confidence range than the object detection model. The class curves also follow very distinct trends, with the F1-score of the thermal solar panels being considerably worse than that of the photovoltaic panels.
+For the F1-Confidence curve (Fig. \ref{fig:model02_yolof1}) all classes attain F1-score of 0.76 at 0.46, which is a lower F1-score and narrower confidence range than the object detection model. The class curves also follow very distinct trends, with the F1-score of the thermal solar panels being considerably worse than that of the photovoltaic panels.
 
 \begin{figure}[H]
     \centering
@@ -398,7 +405,6 @@ Test Set & 1.3415 & 1107 \\
 \end{table}
 
 
-\newpage
 \section{Discussion}
 
 In order to have a representative comparison of the three models, each fold of the final model was used to pass the test set through it and the MAE score was collected from the Zindi Challenge website. The result is in Fig. \ref{fig:results_mae_boxplot}, where the Hybrid model clearly shows a lower value of MAE (both on average and range). Both Object Detection and Instance Segmentation show a narrower range of MAE, but worse than the Hybrid model.
