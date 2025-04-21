@@ -43,7 +43,7 @@ joaopcardoso@ua.pt}}
 \thispagestyle{plain}
 
 \begin{abstract}
-This project was developed with the Lacuna Solar Survey Challenge in mind, to develop a model capable of identifying photovoltaic and thermal solar panels from aerial imagery (satellite or drone). The challenge is of public interest, to learn about solar panel usage, and support in planning infrastructure in Madagascar. The dataset was curated for inconsistencies and label improvement. Three types of models were developed: image-based regression, object detection, and instance segmentation, where the former was the best performing model. The benchmark revealed that there was still a margin for progression, that would require finer curation of the dataset and computational power.
+This project was developed with the Lacuna Solar Survey Challenge in mind, to create a model capable of identifying photovoltaic and thermal solar panels from aerial imagery (satellite or drone). The challenge is of public interest, to learn about solar panel usage, and support in planning infrastructure in Madagascar. The dataset presented issues such as inconsistent masks and a strong class imbalance, which required manual curation. Three types of models were developed: a hybrid approach, of image-based regression combined with metadata based estimation, object detection, and instance segmentation, where the former was the best performing model. The benchmark revealed that there was still a margin for progression, that would require finer curation of the dataset and computational power.
 %PERFORMANCE NO Q??? Using a curated dataset from the Lacuna Solar Survey Challenge, the performance of different models are explored, including object detection and image-based regression architectures. Despite challenges such as class imbalance and inconsistent annotations, the hybrid regression model achieved the best performance. The results highlight the impact of data quality and model selection in remote sensing applications for energy infrastructure assessment. (from GPT, don't use)
 %This project addresses the detection and counting of photovoltaic and thermal solar panels in aerial imagery, developed for the Lacuna Solar Survey Challenge on Zindi. The dataset presented issues such as inconsistent masks and a strong class imbalance. After manual refinement, multiple models were evaluated. The best results were achieved using a hybrid approach that combines image feature extraction with metadata-based estimation, leading to the lowest MAE among tested configurations.
 \end{abstract}
@@ -206,14 +206,16 @@ $\delta$ & \textbf{1} \\
 \end{table}
 \newpage
 
-Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The selected scheduler (CosineAnnealingWarmRestarts) dynamically adjusts both the learning rate and regularization (via weight decay) following a cosine schedule. Starting from a maximum value, the learning rate gradually decreases to a defined minimum over a period (T\_0 = 5), then restarts at the maximum. This cyclical behavior prevents the model from getting trapped in local minima by periodically increasing the learning rate, while longer periods (with T\_mult = 2) allow for finer adjustments over time. The synchronized modulation of regularization further supports generalization throughout training.
+Upon selecting the best model, the final inference on the test data was done resorting to TTA, Test-Time Augmentation, where the model makes multiple predictions on augmented versions of the same image (e.g., flipping, scaling, cropping). With this, the final result is an average of the group of predictions. The scheduler selected (CosineAnnealingWarmRestarts) dynamically changes the learning rate following a cosine schedule, with a defined period (T\_0 = 5), where at each period the learning rate decays to a minimum, restarting at the highest set learning rate. This allows to prevent locking into local minima, by passing through higher learning rates periodically, allowing for fine tuning with lower learning rates for longer periods (given T\_mult = 2, where the period increases two fold at each restart).
+
+% JP: Actualizado
 
 The erratic behaviour of the CV loss curve is evident from Fig. \ref{fig:model01_lc}, likely due to the small validation set (20 \% of an already small dataset), which leads to variance spikes due to the changing samples within. The training loss is rather smooth, with periodical increases well in line with the scheduler's algorithm (5, 5 + 10, 15 + 20, ...).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/model01_lc.png}
-    \caption{Learning curve for the best fit model, with Training and Cross-Validation Loss plotted (with standard deviation in shade).}
+    \caption{Learning curve for the best fit model, with Training and Cross-Validation Loss plotted (with standard deviation in shade). The dashed lines correspond to the early stops of each fold.}
     \label{fig:model01_lc}
 \end{figure}
 
@@ -287,7 +289,7 @@ The resulting F1-Confidence curve (Fig. \ref{fig:model03_yolof1}) is a typical a
     \includegraphics[width=1\linewidth]{assets/model03_lc.png}
     \caption{Learning curve for YOLOv8L-3, with
 Training and Cross-Validation Loss plotted (with standard
-deviation in shade).}
+deviation in shade). The dashed lines correspond to the early stops of each fold.}
     \label{fig:model03_lc}
 \end{figure}
 
@@ -375,7 +377,7 @@ In Fig. \ref{fig:model02_lc} the CV loss curve stabilizes early on, whereas the 
     \centering
     \includegraphics[width=1\linewidth]{assets/model02_lc.png}
     \caption{Learning curve for YOLOv11L-2, with Training and Cross-Validation Loss plotted (with standard deviation in
-shade).}
+shade). The dashed lines correspond to the early stops of each fold.}
     \label{fig:model02_lc}
 \end{figure}
 
