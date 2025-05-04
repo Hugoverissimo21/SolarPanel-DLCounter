@@ -28,7 +28,11 @@ challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
 - `Model_Train` and `Model_Val.pkl`: files containing the data used for training and validation, initially (we ended up using kaggle datasets).
 
+- `ModelSelection.ipynb`: notebook which contains the best model (overall) selection process.
+
 - `README.md`: this file.
+
+- `slides.pdf` and `slides.pptx`: slides for the presentation.
 
 - `SupvDset.py`: file containing the class used to load the data, initially, and to adjust the polygons.
 
