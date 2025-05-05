@@ -1,6 +1,8 @@
 # Lacuna Solar Survey Challenge
 
-challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
+from https://zindi.africa/competitions/lacuna-solar-survey-challenge
+
+Some files were not included in the submission package due to their size or importance. They can be accessed at [github.com/jepe06/Lacuna-solar](https://github.com/jepe06/Lacuna-solar).
 
 - Hugo Veríssimo
 
@@ -18,7 +20,7 @@ challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
 - `images/`: where the images were stored, given by the challenge.
 
-- `report/`: contains the report of the whole project.
+- `report/`: contains the report files.
 
 - `EDA01` to `EDA04.ipynb`: files related to the exploratory data analysis and data transformations.
 
@@ -31,6 +33,8 @@ challenge from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 - `ModelSelection.ipynb`: notebook which contains the best model (overall) selection process.
 
 - `README.md`: this file.
+
+- `report.pdf`: report of the project.
 
 - `slides.pdf` and `slides.pptx`: slides for the presentation.
 
