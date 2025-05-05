@@ -2,11 +2,9 @@
 
 from https://zindi.africa/competitions/lacuna-solar-survey-challenge
 
-Some files were not included in the submission package due to their size or importance. They can be accessed at [github.com/jepe06/Lacuna-solar](https://github.com/jepe06/Lacuna-solar).
-
 - Hugo Veríssimo
 
-- João Cardoso
+- [João Cardoso](https://github.com/jepe06)
 
 ## Files Description
 
